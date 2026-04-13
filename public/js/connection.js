@@ -82,6 +82,7 @@ const handleClickConnect = async () => {
         $notifications.innerHTML = '<p><em>Waiting for notifications...</em></p>';
         resetBalloonPosition();
         displayConnectionState();
+        emitEsp32ConnectionChange();
 
         console.log('Connected and ready for bidirectional communication!');
     } catch (error) {
@@ -106,6 +107,7 @@ const onDisconnected = () => {
     characteristicButton = null;
     resetBalloonPosition();
     displayConnectionState();
+    emitEsp32ConnectionChange();
 };
 
 const handleNotificationButton = (event) => {
@@ -143,6 +145,15 @@ const displayConnectionState = () => {
         $notConnected.style.display = "block";
         $connected.style.display = "none";
     }
+};
+
+// Expose the current BLE connection state for other UI scripts.
+window.isEsp32Connected = () => isConnected;
+
+const emitEsp32ConnectionChange = () => {
+    window.dispatchEvent(new CustomEvent('esp32-connection-change', {
+        detail: { isConnected },
+    }));
 };
 
 initConnection();

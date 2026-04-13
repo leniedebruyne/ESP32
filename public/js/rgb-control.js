@@ -29,6 +29,33 @@ const updateColorPreview = () => {
     $colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 };
 
+const setRgbValues = (r, g, b) => {
+    if (!$r || !$g || !$b) return;
+
+    $r.value = String(r);
+    $g.value = String(g);
+    $b.value = String(b);
+
+    if ($rValue) $rValue.textContent = String(r);
+    if ($gValue) $gValue.textContent = String(g);
+    if ($bValue) $bValue.textContent = String(b);
+
+    updateColorPreview();
+};
+
+const sendRgbIfConnected = (r, g, b) => {
+    if (!isConnected) return;
+
+    if (characteristicR) queueWrite(characteristicR, r);
+    if (characteristicG) queueWrite(characteristicG, g);
+    if (characteristicB) queueWrite(characteristicB, b);
+};
+
+const setLedRed = () => {
+    setRgbValues(255, 0, 0);
+    sendRgbIfConnected(255, 0, 0);
+};
+
 const handleInputR = async () => {
     const value = parseInt($r.value);
     $rValue.textContent = value;
@@ -59,10 +86,16 @@ const handleInputB = async () => {
 const initRgbControl = () => {
     if (!$r || !$g || !$b || !$colorPreview) return;
 
-    updateColorPreview();
+    setLedRed();
     $r.addEventListener("input", handleInputR);
     $g.addEventListener("input", handleInputG);
     $b.addEventListener("input", handleInputB);
+
+    window.addEventListener('esp32-connection-change', (event) => {
+        if (event?.detail?.isConnected) {
+            setLedRed();
+        }
+    });
 };
 
 initRgbControl();

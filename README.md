@@ -339,7 +339,199 @@ const updateBalloonPosition = () => {
 ```
 
 ## Ui elementen van het spel toevoegen
+Daarna heb ik ervoor gezorgt dat wolken en vogels kunnen spanwnen, maar alleen als het esp bord verbonden is. Ik heb de code van de vorige opdracht hiervoor gekopieerd.
 
+
+```javascript
+const cloudContainer = ensureCloudContainer();
+const maxClouds = 4;
+
+const gameArea = document.body;
+const balloon = document.querySelector('img[alt="Balloon Control"]')?.parentElement;
+
+let speedMultiplier = 1;
+let birdExists = false;
+let cloudIntervalId = null;
+let birdIntervalId = null;
+
+const BIRD_OFFSCREEN_PADDING = 100;
+
+function ensureCloudContainer() {
+    let container = document.querySelector('.clouds');
+
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'clouds';
+        document.body.prepend(container);
+    }
+
+    return container;
+}
+
+function isEsp32ConnectionActive() {
+    if (typeof window.isEsp32Connected === 'function') {
+        return window.isEsp32Connected();
+    }
+
+    return false;
+}
+
+function spawnCloud() {
+    if (!isEsp32ConnectionActive()) {
+        return;
+    }
+
+    if (!cloudContainer) {
+        return;
+    }
+
+    if (cloudContainer.children.length >= maxClouds) {
+        return;
+    }
+
+    const cloud = document.createElement('div');
+    cloud.classList.add('cloud');
+
+    cloud.style.backgroundImage = "url('/assets/Cloud.png')";
+    cloud.style.left = Math.random() * 80 + 10 + 'vw';
+
+    const scale = Math.random() * 0.6 + 0.7;
+    cloud.style.setProperty('--scale', scale);
+
+    const duration = (Math.random() * 10 + 8) / Math.max(speedMultiplier, 0.1);
+    cloud.style.animation = `rise ${duration}s linear forwards`;
+
+    cloudContainer.appendChild(cloud);
+
+    cloud.addEventListener('animationend', () => {
+        cloud.remove();
+    });
+}
+
+function spawnBird() {
+    if (!isEsp32ConnectionActive() || birdExists || !gameArea) {
+        return;
+    }
+
+    birdExists = true;
+
+    const bird = document.createElement('div');
+    bird.classList.add('bird');
+    bird.innerHTML = '<img src="/assets/Bird.png" alt="bird">';
+
+    const topPos = Math.random() * (window.innerHeight * 0.6) + window.innerHeight * 0.1;
+    bird.style.top = `${topPos}px`;
+
+    const fromLeft = Math.random() < 0.5;
+    let pos = fromLeft ? -BIRD_OFFSCREEN_PADDING : window.innerWidth + BIRD_OFFSCREEN_PADDING;
+    const direction = fromLeft ? 1 : -1;
+
+    bird.style.left = pos + 'px';
+    bird.style.transform = `scaleX(${fromLeft ? 1 : -1})`;
+
+    const baseSpeed = Math.random() * 3 + 1;
+
+    gameArea.appendChild(bird);
+
+    function animate() {
+        if (!isEsp32ConnectionActive()) {
+            bird.remove();
+            birdExists = false;
+            return;
+        }
+
+        const step = baseSpeed * speedMultiplier * direction;
+        const steps = Math.ceil(Math.abs(step));
+
+        for (let i = 0; i < steps; i++) {
+            pos += direction;
+            bird.style.left = pos + 'px';
+
+            if (balloon) {
+                const birdRect = bird.getBoundingClientRect();
+                const balloonRect = balloon.getBoundingClientRect();
+
+                if (
+                    birdRect.left < balloonRect.right &&
+                    birdRect.right > balloonRect.left &&
+                    birdRect.top < balloonRect.bottom &&
+                    birdRect.bottom > balloonRect.top
+                ) {
+                    bird.remove();
+                    birdExists = false;
+                    return;
+                }
+            }
+        }
+
+        if ((direction === 1 && pos > window.innerWidth + BIRD_OFFSCREEN_PADDING) ||
+            (direction === -1 && pos < -BIRD_OFFSCREEN_PADDING)) {
+            bird.remove();
+            birdExists = false;
+            return;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+}
+
+function startAmbientSpawns() {
+    if (cloudIntervalId === null) {
+        cloudIntervalId = setInterval(spawnCloud, 2200);
+    }
+
+    if (birdIntervalId === null) {
+        birdIntervalId = setInterval(spawnBird, 1000);
+    }
+}
+
+function stopAmbientSpawns() {
+    if (cloudIntervalId !== null) {
+        clearInterval(cloudIntervalId);
+        cloudIntervalId = null;
+    }
+
+    if (birdIntervalId !== null) {
+        clearInterval(birdIntervalId);
+        birdIntervalId = null;
+    }
+}
+
+function syncAmbientSpawns() {
+    if (isEsp32ConnectionActive()) {
+        startAmbientSpawns();
+    } else {
+        stopAmbientSpawns();
+    }
+}
+
+window.addEventListener('esp32-connection-change', syncAmbientSpawns);
+syncAmbientSpawns();
+
+window.setGameSpeedMultiplier = (value) => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+        speedMultiplier = parsed;
+    }
+};
+
+```
+
+## Ui van html veranderen
+Daarna heb ik ervoor gezorgt dat de ui van het spel op het scherm kwam te staan. Daarvoor heb ik eerst de html van de oefening verwijderd. Deze had ik namelijk niet meer nodig. De enige html die ik heb toegevoegd tot nu toe is de balk bovenaan die laat zien hoe lang je al bezig bent aan het spel, wat het record is en hoeveel levens je nog hebt.
+
+```javascript
+ <div class="hud" aria-live="polite">
+                    <span class="time">Time: 00:00</span>
+                    <span class="best">Best time: 00:00</span>
+                    <div class="lives">❤️ ❤️ ❤️</div>
+                </div>
+```
+
+In de javascript heb ik de best time, time en lives laten werken. Ik heb dit aan ai gevraagd zodat ik daar niet te veel tijd mee verloor, ik had dit namelijk al uitgezogt in de vorige oefening.
+voor eventjes zal ik de "disconnect en connected to ..." laten staan, maar later zal ik deze verzetten naar de ui balk die ik later zal toevoegen. 
 
 ```javascript
 
