@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Web Bluetooth Potmeter + RGB LED</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <div id="app">
+        <h1>Web Bluetooth Potmeter + RGB LED</h1>
+        <div id="not-supported">
+            <p>⚠️ Web Bluetooth is not supported in this browser.</p>
+            <p>Please use Chrome, Edge, or Opera on desktop, or Chrome on Android.</p>
+        </div>
+        <div id="supported">
+            <div id="not-connected">
+                <button id="connectButton">Connect to BLE Device</button>
+                <p class="status disconnected">Not connected</p>
+            </div>
+            <div id="connected">
+                <button id="disconnectButton">Disconnect</button>
+                <p class="status connected">✓ Connected to <span id="deviceName"></span></p>
+
+                <h3>Potmeter Input (Arduino → Web):</h3>
+                <div class="section">
+                    <div id="notifications">
+                        <p><em>Waiting for data...</em></p>
+                    </div>
+                </div>
+
+                <h3>RGB LED Control (Web → Arduino):</h3>
+                <div class="section">
+                    <div class="slider-group">
+                        <label for="r">Red</label>
+                        <input type="range" min="0" max="255" value="0" id="r">
+                        <div class="slider-value" id="rValue">0</div>
+                    </div>
+                    <div class="slider-group">
+                        <label for="g">Green</label>
+                        <input type="range" min="0" max="255" value="0" id="g">
+                        <div class="slider-value" id="gValue">0</div>
+                    </div>
+                    <div class="slider-group">
+                        <label for="b">Blue</label>
+                        <input type="range" min="0" max="255" value="0" id="b">
+                        <div class="slider-value" id="bValue">0</div>
+                    </div>
+                    <div id="colorPreview" class="color-preview" style="background-color: rgb(0, 0, 0);"></div>
+                </div>
+
+                <h3>Button Control</h3>
+                <div class="section">
+                    <img src="assets/Balloon.svg" alt="Balloon Control">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/connection.js"></script>
+</body>
+
+</html>
