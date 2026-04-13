@@ -179,12 +179,12 @@ const updateColorPreview = () => {
   Balloon Control
 ==============================*/
 const moveBalloonLeft = () => {
-    balloonPosition = -1;
+    balloonPosition -= 5;
     updateBalloonPosition();
 };
 
 const moveBalloonRight = () => {
-    balloonPosition = 1;
+    balloonPosition += 5;
     updateBalloonPosition();
 };
 
@@ -196,14 +196,13 @@ const resetBalloonPosition = () => {
 const updateBalloonPosition = () => {
     if (!$balloonContainer) return;
 
-    let transform = 'translateX(0)';
-    if (balloonPosition === -1) {
-        transform = 'translateX(-60px)';
-    } else if (balloonPosition === 1) {
-        transform = 'translateX(60px)';
-    }
+    // grenzen 
+    const min = -150;
+    const max = 150;
 
-    $balloonContainer.style.transform = transform;
+    balloonPosition = Math.max(min, Math.min(max, balloonPosition));
+
+    $balloonContainer.style.transform = `translateX(${balloonPosition}px)`;
 };
 
 // Queue to serialize BLE write operations
