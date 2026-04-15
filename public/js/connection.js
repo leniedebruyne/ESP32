@@ -2,6 +2,8 @@
   App State & BLE Variables
 ==============================*/
 
+import { moveBalloonLeft, moveBalloonRight, resetBalloonPosition } from './balloon-control.js';
+
 const hasWebBluetooth = "bluetooth" in navigator;
 let isConnected = false;
 let bluetoothDevice = null;
@@ -10,6 +12,14 @@ let characteristicR = null;
 let characteristicG = null;
 let characteristicB = null;
 let characteristicButton = null;
+
+export const isEsp32Connected = () => isConnected;
+
+export const getRgbCharacteristics = () => ({
+    characteristicR,
+    characteristicG,
+    characteristicB,
+});
 
 /*==============================
   UUIDs for ESP32 BLE Service
@@ -159,8 +169,8 @@ const displayConnectionState = () => {
     }
 };
 
-// Expose the current BLE connection state for other UI scripts.
-window.isEsp32Connected = () => isConnected;
+// Keep a window alias for compatibility with existing event/UI integrations.
+window.isEsp32Connected = isEsp32Connected;
 
 const emitEsp32ConnectionChange = () => {
     window.dispatchEvent(new CustomEvent('esp32-connection-change', {

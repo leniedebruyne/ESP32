@@ -2,6 +2,8 @@
   RGB LED Control
 ==============================*/
 
+import { getRgbCharacteristics, isEsp32Connected } from './connection.js';
+
 const $r = document.getElementById("r");
 const $g = document.getElementById("g");
 const $b = document.getElementById("b");
@@ -43,15 +45,19 @@ const setRgbValues = (r, g, b) => {
     updateColorPreview();
 };
 
-const sendRgbIfConnected = (r, g, b) => {
-    if (!isConnected) return;
+export const sendRgbIfConnected = (r, g, b) => {
+    if (!isEsp32Connected()) return;
+
+    const { characteristicR, characteristicG, characteristicB } = getRgbCharacteristics();
 
     if (characteristicR) queueWrite(characteristicR, r);
     if (characteristicG) queueWrite(characteristicG, g);
     if (characteristicB) queueWrite(characteristicB, b);
 };
 
-const turnRgbOff = () => {
+export const turnRgbOff = () => {
+    const { characteristicR, characteristicG, characteristicB } = getRgbCharacteristics();
+
     if (characteristicR) queueWrite(characteristicR, 0);
     if (characteristicG) queueWrite(characteristicG, 0);
     if (characteristicB) queueWrite(characteristicB, 0);
@@ -67,7 +73,9 @@ const handleInputR = async () => {
     $rValue.textContent = value;
     updateColorPreview();
 
-    if (!isConnected || !characteristicR) return;
+    const { characteristicR } = getRgbCharacteristics();
+
+    if (!isEsp32Connected() || !characteristicR) return;
     queueWrite(characteristicR, value);
 };
 
@@ -76,7 +84,9 @@ const handleInputG = async () => {
     $gValue.textContent = value;
     updateColorPreview();
 
-    if (!isConnected || !characteristicG) return;
+    const { characteristicG } = getRgbCharacteristics();
+
+    if (!isEsp32Connected() || !characteristicG) return;
     queueWrite(characteristicG, value);
 };
 
@@ -85,7 +95,9 @@ const handleInputB = async () => {
     $bValue.textContent = value;
     updateColorPreview();
 
-    if (!isConnected || !characteristicB) return;
+    const { characteristicB } = getRgbCharacteristics();
+
+    if (!isEsp32Connected() || !characteristicB) return;
     queueWrite(characteristicB, value);
 };
 

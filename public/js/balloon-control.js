@@ -7,17 +7,17 @@ const $balloonContainer = $balloonImg?.parentElement;
 
 let balloonPosition = 0;
 
-const moveBalloonLeft = () => {
+export const moveBalloonLeft = () => {
     balloonPosition -= 5;
     updateBalloonPosition();
 };
 
-const moveBalloonRight = () => {
+export const moveBalloonRight = () => {
     balloonPosition += 5;
     updateBalloonPosition();
 };
 
-const resetBalloonPosition = () => {
+export const resetBalloonPosition = () => {
     balloonPosition = 0;
     updateBalloonPosition();
 };

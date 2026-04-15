@@ -2,6 +2,9 @@
   Ambient UI: Clouds + Birds
 ==============================*/
 
+import { isEsp32Connected } from './connection.js';
+import { sendRgbIfConnected } from './rgb-control.js';
+
 const cloudContainer = ensureCloudContainer();
 const maxClouds = 4;
 
@@ -41,11 +44,7 @@ function ensureCloudContainer() {
 }
 
 function isEsp32ConnectionActive() {
-    if (typeof window.isEsp32Connected === 'function') {
-        return window.isEsp32Connected();
-    }
-
-    return false;
+    return isEsp32Connected();
 }
 
 function loadBestTime() {

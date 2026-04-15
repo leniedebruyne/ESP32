@@ -580,7 +580,9 @@ const handleClickDisconnect = async () => {
 ```
 
 ## Code opkuisen
-Na deze stappen was he tijd om de koze eens op te kuisen.
+Na deze stappen was het tijd om de code eens op te kuisen.
+Ik heb alle js files geexporteerd in mijn html files, zodat er geen globale exports meer zijn.
+
 
 ```javascript
 
