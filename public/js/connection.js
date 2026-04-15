@@ -93,12 +93,24 @@ const handleClickConnect = async () => {
 
 const handleClickDisconnect = async () => {
     if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+
+        if (typeof window.turnRgbOff === 'function') {
+            window.turnRgbOff();
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         bluetoothDevice.gatt.disconnect();
     }
 };
 
 const onDisconnected = () => {
     console.log('Bluetooth Device disconnected');
+
+    if (typeof window.turnRgbOff === 'function') {
+        window.turnRgbOff();
+    }
+
     isConnected = false;
     bluetoothDevice = null;
     characteristicR = null;

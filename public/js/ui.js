@@ -122,6 +122,7 @@ function updateBestTimeIfNeeded(finalSeconds) {
 function beginRound() {
     lives = MAX_LIVES;
     updateHudLives();
+    updateLedByLives();
     startHudTimer();
 }
 
@@ -135,6 +136,7 @@ function endRound() {
 function loseLife() {
     lives = Math.max(0, lives - 1);
     updateHudLives();
+    updateLedByLives();
 
     if (lives === 0) {
         endRound();
@@ -306,6 +308,23 @@ function syncAmbientSpawns() {
         stopAmbientSpawns();
         lives = MAX_LIVES;
         updateHudLives();
+    }
+}
+
+function updateLedByLives() {
+    if (!isEsp32ConnectionActive()) return;
+
+    if (lives === 3) {
+        sendRgbIfConnected(0, 40, 0); // groen
+    }
+    else if (lives === 2) {
+        sendRgbIfConnected(60, 20, 0); // oranje
+    }
+    else if (lives === 1) {
+        sendRgbIfConnected(80, 0, 0); // rood
+    }
+    else if (lives === 0) {
+        sendRgbIfConnected(0, 0, 0); // uit
     }
 }
 

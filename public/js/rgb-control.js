@@ -51,6 +51,12 @@ const sendRgbIfConnected = (r, g, b) => {
     if (characteristicB) queueWrite(characteristicB, b);
 };
 
+const turnRgbOff = () => {
+    if (characteristicR) queueWrite(characteristicR, 0);
+    if (characteristicG) queueWrite(characteristicG, 0);
+    if (characteristicB) queueWrite(characteristicB, 0);
+};
+
 const setLedRed = () => {
     setRgbValues(255, 0, 0);
     sendRgbIfConnected(255, 0, 0);
@@ -99,3 +105,6 @@ const initRgbControl = () => {
 };
 
 initRgbControl();
+
+window.sendRgbIfConnected = sendRgbIfConnected;
+window.turnRgbOff = turnRgbOff;

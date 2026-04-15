@@ -533,8 +533,56 @@ Daarna heb ik ervoor gezorgt dat de ui van het spel op het scherm kwam te staan.
 In de javascript heb ik de best time, time en lives laten werken. Ik heb dit aan ai gevraagd zodat ik daar niet te veel tijd mee verloor, ik had dit namelijk al uitgezogt in de vorige oefening.
 voor eventjes zal ik de "disconnect en connected to ..." laten staan, maar later zal ik deze verzetten naar de ui balk die ik later zal toevoegen. 
 
+## RGB led connecten met levens
+Ik had al de code dat als je een leven verloor, deze weg ging van de rode hartjes. Ik wou dit nog visueler maken door de rgb led te gebruiken. Dit was het doel:
+3 levens = groen
+2 levens = oranje
+1 leven = rood
+0 levens = uit
+
+In de ui.js heb ik een fucntie toegevoegd die de led kan updaten aan de hand van het aantal levens. Dit ziet er zo uit:
+
+```javascript
+function updateLedByLives() {
+    if (!isEsp32ConnectionActive()) return;
+
+    if (lives === 3) {
+        sendRgbIfConnected(0, 40, 0); // groen
+    }
+    else if (lives === 2) {
+        sendRgbIfConnected(60, 20, 0); // oranje
+    }
+    else if (lives === 1) {
+        sendRgbIfConnected(80, 0, 0); // rood
+    }
+    else if (lives === 0) {
+        sendRgbIfConnected(0, 0, 0); // uit
+    }
+}
+```
+
+Ook vond ik het logischer dat als het bordje gedisconnect was, de led ook niet meer brande. Daarom heb ik aan de disconnect functie de logica toegepast dat als de funcie turnRgbOff bestaat, dat hij de rgb lichten uit zet.
+
+
+```javascript
+const handleClickDisconnect = async () => {
+    if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+
+        if (typeof window.turnRgbOff === 'function') {
+            window.turnRgbOff();
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        bluetoothDevice.gatt.disconnect();
+    }
+};
+```
+
+## Code opkuisen
+Na deze stappen was he tijd om de koze eens op te kuisen.
+
 ```javascript
 
 ```
-
 
