@@ -589,6 +589,38 @@ Na het spelletje een paar keer te spelen merkte ik dat het tog nodig was om de b
 ## styling begin scherm
 Tot nu toe ziet het start scherm er nog basic uit, een button, een beetje feedback en een lucht achtige achtergrond kleur. Ik wil hier een beetje meer een game design aan geven, daarom zal ik dit scherm wat beter maken met css. 
 
+## bug fix border
+Tijdens het spelen van het spel had ik door dat de ballon niet tot aan de borders van het scherm kwam, dit was omdat ik de borders tijdelijk gehardcode had, en dit was vergeten. Dit heb ik dus opgelost. 
+
+```javascript
+const updateBalloonPosition = () => {
+    if (!$balloonContainer) return;
+
+    // Get the game stage container dimensions
+    const gameStage = $balloonContainer.parentElement;
+    if (!gameStage) return;
+
+    const stageRect = gameStage.getBoundingClientRect();
+    const balloonRect = $balloonImg.getBoundingClientRect();
+
+    // Calculate boundaries to allow balloon to touch screen edges
+    const balloonWidth = balloonRect.width;
+    const balloonHeight = balloonRect.height;
+    const stageWidth = stageRect.width;
+    const stageHeight = stageRect.height;
+
+    // Calculate max displacement from center
+    const maxX = (stageWidth / 2) - (balloonWidth / 2);
+    const maxY = (stageHeight / 2) - (balloonHeight / 2);
+    const minX = -maxX;
+    const minY = -maxY;
+
+    balloonPositionX = Math.max(minX, Math.min(maxX, balloonPositionX));
+    balloonPositionY = Math.max(minY, Math.min(maxY, balloonPositionY));
+    $balloonContainer.style.transform = `translate(${balloonPositionX}px, ${balloonPositionY}px)`;
+};
+```
+
 ```javascript
 
 ```
