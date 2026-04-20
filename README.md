@@ -586,6 +586,9 @@ Ik heb alle js files geexporteerd in mijn html files, zodat er geen globale expo
 ## Knopjes bij voor naar boven en beneden
 Na het spelletje een paar keer te spelen merkte ik dat het tog nodig was om de ballon ook naar boven en beneden te kunnen bewegen. Daarom heb ik ervoor gekozen om nog 2 knopjes bij te voegen. Voor de code heb ik gewoon 2 poorten bijgevoegd en daar de up en down button aan gelinkt en die dan ook toegevoegd aan de javascript code. 
 
+## styling begin scherm
+Tot nu toe ziet het start scherm er nog basic uit, een button, een beetje feedback en een lucht achtige achtergrond kleur. Ik wil hier een beetje meer een game design aan geven, daarom zal ik dit scherm wat beter maken met css. 
+
 ```javascript
 
 ```
