@@ -621,7 +621,114 @@ const updateBalloonPosition = () => {
 };
 ```
 
+## Game over scherm
+Tot nu toe, als je geen levens meer hebt, begint het spel direct opnieuw. Ik wil er voor zorgen dat als je geen levens meer hebt, je even een game over scherm ziet met een timer van 5 secondne die aftelt, voor het spel opnieuw begint.
+
+Als eerste heb ik de overlay van het spel gemaakt. Daar geef ik de html weer en zeg uj welke class hij moet hebben.
+
 ```javascript
+function ensureGameOverOverlay() {
+    let overlay = document.querySelector('.game-over-overlay');
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'game-over-overlay hidden';
+        overlay.setAttribute('aria-live', 'assertive');
+        overlay.innerHTML = `
+            <div class="game-over-content">
+                <h2>GAME OVER</h2>
+                <p>Restarting in <span class="countdown">5</span>s</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    return overlay;
+}
+```
+
+Dan zorg ik ervoor dat die overlay getoont kan worden of verborgen.
+
+
+```javascript
+function setGameOverOverlayVisible(isVisible) {
+    if (!gameOverOverlay) {
+        return;
+    }
+
+    gameOverOverlay.classList.toggle('hidden', !isVisible);
+}
+```
+
+Daarna moest ik ervoor zorgen dat de count down kan updaten. 
+```javascript
+function updateGameOverCountdown(secondsLeft) {
+    if (!gameOverCountdownLabel) {
+        return;
+    }
+
+    gameOverCountdownLabel.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
+}
+```
+
+Dan heb ik ook nog een fucntie gemaakt die alle timers opruimt die te maken hebben met het restarten van het spel, zo voorkom ik onnodige bugs.
+```javascript
+function clearRoundRestartTimers() {
+    if (restartTimeoutId !== null) {
+        clearTimeout(restartTimeoutId);
+        restartTimeoutId = null;
+    }
+
+    if (restartCountdownIntervalId !== null) {
+        clearInterval(restartCountdownIntervalId);
+        restartCountdownIntervalId = null;
+    }
+}
+```
+
+Dan heb ik een fucntie die kijkt of de game klaar is om gespeeld te worden. Als er een connectie is, en de speler nog levens geeft komt er niks, anders komt de overlay.
+
+```javascript
+function isGameplayActive() {
+    return isEsp32ConnectionActive() && !isGameOverCountdownActive && lives > 0;
+}
+```
+
+En als laatste heb ik een fucntie die de game restart. Dit houd in dat hij de oude timers reset, overlay, .... .
+
+```javascript
+function startGameOverCountdown() {
+    clearRoundRestartTimers();
+    isGameOverCountdownActive = true;
+
+    let remainingSeconds = GAME_OVER_COUNTDOWN_SECONDS;
+    updateGameOverCountdown(remainingSeconds);
+    setGameOverOverlayVisible(true);
+
+    restartCountdownIntervalId = setInterval(() => {
+        remainingSeconds -= 1;
+        updateGameOverCountdown(remainingSeconds);
+    }, 1000);
+
+    restartTimeoutId = setTimeout(() => {
+        clearRoundRestartTimers();
+        setGameOverOverlayVisible(false);
+        isGameOverCountdownActive = false;
+
+        if (!isEsp32ConnectionActive()) {
+            return;
+        }
+
+        beginRound();
+        startAmbientSpawns();
+    }, GAME_OVER_COUNTDOWN_SECONDS * 1000);
+}
 
 ```
 
+
+
+
+```javascript
+
+```

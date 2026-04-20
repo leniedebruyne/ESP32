@@ -23,13 +23,19 @@ let activeBird = null;
 
 const MAX_LIVES = 3;
 const BEST_TIME_STORAGE_KEY = 'balloon-best-time-seconds';
+const GAME_OVER_COUNTDOWN_SECONDS = 5;
 
 let lives = MAX_LIVES;
 let gameStartTimestamp = null;
 let timerIntervalId = null;
 let bestTimeSeconds = loadBestTime();
+let isGameOverCountdownActive = false;
+let restartTimeoutId = null;
+let restartCountdownIntervalId = null;
 
 const BIRD_OFFSCREEN_PADDING = 100;
+const gameOverOverlay = ensureGameOverOverlay();
+const gameOverCountdownLabel = gameOverOverlay?.querySelector('.countdown');
 
 function ensureCloudContainer() {
     let container = document.querySelector('.clouds');
@@ -41,6 +47,84 @@ function ensureCloudContainer() {
     }
 
     return container;
+}
+
+function ensureGameOverOverlay() {
+    let overlay = document.querySelector('.game-over-overlay');
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'game-over-overlay hidden';
+        overlay.setAttribute('aria-live', 'assertive');
+        overlay.innerHTML = `
+            <div class="game-over-content">
+                <h2>GAME OVER</h2>
+                <p>Restarting in <span class="countdown">5</span>s</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    return overlay;
+}
+
+function setGameOverOverlayVisible(isVisible) {
+    if (!gameOverOverlay) {
+        return;
+    }
+
+    gameOverOverlay.classList.toggle('hidden', !isVisible);
+}
+
+function updateGameOverCountdown(secondsLeft) {
+    if (!gameOverCountdownLabel) {
+        return;
+    }
+
+    gameOverCountdownLabel.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
+}
+
+function clearRoundRestartTimers() {
+    if (restartTimeoutId !== null) {
+        clearTimeout(restartTimeoutId);
+        restartTimeoutId = null;
+    }
+
+    if (restartCountdownIntervalId !== null) {
+        clearInterval(restartCountdownIntervalId);
+        restartCountdownIntervalId = null;
+    }
+}
+
+function isGameplayActive() {
+    return isEsp32ConnectionActive() && !isGameOverCountdownActive && lives > 0;
+}
+
+function startGameOverCountdown() {
+    clearRoundRestartTimers();
+    isGameOverCountdownActive = true;
+
+    let remainingSeconds = GAME_OVER_COUNTDOWN_SECONDS;
+    updateGameOverCountdown(remainingSeconds);
+    setGameOverOverlayVisible(true);
+
+    restartCountdownIntervalId = setInterval(() => {
+        remainingSeconds -= 1;
+        updateGameOverCountdown(remainingSeconds);
+    }, 1000);
+
+    restartTimeoutId = setTimeout(() => {
+        clearRoundRestartTimers();
+        setGameOverOverlayVisible(false);
+        isGameOverCountdownActive = false;
+
+        if (!isEsp32ConnectionActive()) {
+            return;
+        }
+
+        beginRound();
+        startAmbientSpawns();
+    }, GAME_OVER_COUNTDOWN_SECONDS * 1000);
 }
 
 function isEsp32ConnectionActive() {
@@ -133,6 +217,10 @@ function endRound() {
 }
 
 function loseLife() {
+    if (!isGameplayActive()) {
+        return;
+    }
+
     lives = Math.max(0, lives - 1);
     updateHudLives();
     updateLedByLives();
@@ -140,15 +228,7 @@ function loseLife() {
     if (lives === 0) {
         endRound();
         stopAmbientSpawns();
-
-        setTimeout(() => {
-            if (!isEsp32ConnectionActive()) {
-                return;
-            }
-
-            beginRound();
-            startAmbientSpawns();
-        }, 1200);
+        startGameOverCountdown();
     }
 }
 
@@ -185,7 +265,7 @@ function spawnCloud() {
 }
 
 function spawnBird() {
-    if (!isEsp32ConnectionActive() || birdExists || !gameArea) {
+    if (!isGameplayActive() || birdExists || !gameArea) {
         return;
     }
 
@@ -219,7 +299,7 @@ function spawnBird() {
     };
 
     function animate() {
-        if (!isEsp32ConnectionActive()) {
+        if (!isGameplayActive()) {
             cleanupBird();
             return;
         }
@@ -267,6 +347,10 @@ function spawnBird() {
 }
 
 function startAmbientSpawns() {
+    if (!isGameplayActive()) {
+        return;
+    }
+
     spawnCloud();
     spawnBird();
 
@@ -300,9 +384,16 @@ function stopAmbientSpawns() {
 
 function syncAmbientSpawns() {
     if (isEsp32ConnectionActive()) {
+        if (isGameOverCountdownActive) {
+            return;
+        }
+
         beginRound();
         startAmbientSpawns();
     } else {
+        clearRoundRestartTimers();
+        setGameOverOverlayVisible(false);
+        isGameOverCountdownActive = false;
         endRound();
         stopAmbientSpawns();
         lives = MAX_LIVES;
