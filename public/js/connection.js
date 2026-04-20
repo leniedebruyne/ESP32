@@ -2,7 +2,13 @@
   App State & BLE Variables
 ==============================*/
 
-import { moveBalloonLeft, moveBalloonRight, resetBalloonPosition } from './balloon-control.js';
+import {
+    moveBalloonDown,
+    moveBalloonLeft,
+    moveBalloonRight,
+    moveBalloonUp,
+    resetBalloonPosition,
+} from './balloon-control.js';
 
 const hasWebBluetooth = "bluetooth" in navigator;
 let isConnected = false;
@@ -142,6 +148,10 @@ const handleNotificationButton = (event) => {
         moveBalloonLeft();
     } else if (buttonValue === 1) {
         moveBalloonRight();
+    } else if (buttonValue === 3) {
+        moveBalloonUp();
+    } else if (buttonValue === 4) {
+        moveBalloonDown();
     }
 };
 

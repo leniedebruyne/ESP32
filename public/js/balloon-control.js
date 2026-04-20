@@ -5,31 +5,46 @@
 const $balloonImg = document.querySelector('img[alt="Balloon Control"]');
 const $balloonContainer = $balloonImg?.parentElement;
 
-let balloonPosition = 0;
+let balloonPositionX = 0;
+let balloonPositionY = 0;
 
 export const moveBalloonLeft = () => {
-    balloonPosition -= 5;
+    balloonPositionX -= 5;
     updateBalloonPosition();
 };
 
 export const moveBalloonRight = () => {
-    balloonPosition += 5;
+    balloonPositionX += 5;
+    updateBalloonPosition();
+};
+
+export const moveBalloonUp = () => {
+    balloonPositionY -= 5;
+    updateBalloonPosition();
+};
+
+export const moveBalloonDown = () => {
+    balloonPositionY += 5;
     updateBalloonPosition();
 };
 
 export const resetBalloonPosition = () => {
-    balloonPosition = 0;
+    balloonPositionX = 0;
+    balloonPositionY = 0;
     updateBalloonPosition();
 };
 
 const updateBalloonPosition = () => {
     if (!$balloonContainer) return;
 
-    const min = -150;
-    const max = 150;
+    const minX = -150;
+    const maxX = 150;
+    const minY = -220;
+    const maxY = 220;
 
-    balloonPosition = Math.max(min, Math.min(max, balloonPosition));
-    $balloonContainer.style.transform = `translateX(${balloonPosition}px)`;
+    balloonPositionX = Math.max(minX, Math.min(maxX, balloonPositionX));
+    balloonPositionY = Math.max(minY, Math.min(maxY, balloonPositionY));
+    $balloonContainer.style.transform = `translate(${balloonPositionX}px, ${balloonPositionY}px)`;
 };
 
 resetBalloonPosition();

@@ -583,6 +583,8 @@ const handleClickDisconnect = async () => {
 Na deze stappen was het tijd om de code eens op te kuisen.
 Ik heb alle js files geexporteerd in mijn html files, zodat er geen globale exports meer zijn.
 
+## Knopjes bij voor naar boven en beneden
+Na het spelletje een paar keer te spelen merkte ik dat het tog nodig was om de ballon ook naar boven en beneden te kunnen bewegen. Daarom heb ik ervoor gekozen om nog 2 knopjes bij te voegen. Voor de code heb ik gewoon 2 poorten bijgevoegd en daar de up en down button aan gelinkt en die dan ook toegevoegd aan de javascript code. 
 
 ```javascript
 
