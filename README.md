@@ -726,6 +726,133 @@ function startGameOverCountdown() {
 
 ```
 
+## Botsing
+Als volgende wil ik ervoor zorgen dat als er een botsing gebeurd tussen de vogel en de ballon, er een geluid afgaat. ik heb eerst wat onderzoek gedaan tussen het verschil van een active en passive buzzer, zodat ik weet welke ik wil gaan gebruiken.
+
+- Active buzzer: Geeft direct geluid als je het aansluit maar heeft niet veel controle.
+- Passive buzzer: Hier heb je veel controle mee en kan je dus ook melodietjes spelen.
+
+Omdat ik graag wat meer controle wil over het geluid heb ik besloten om een passive buzzer te gebruiken. Het volgende dat ik heb onderzocht is hoe ik hem kan aanlsuiten. 
+
+Ik ben begonnen met het maken van een test code, zodat ik kon testen hoe de logica van de code werkte en of mijn pieper werkt. 
+
+```javascript
+const int buzzerPin = 19;
+
+void setup() {
+}
+
+void loop() {
+  tone(buzzerPin, 2500);
+  delay(200);
+
+  noTone(buzzerPin);
+  delay(500);
+}
+```
+
+Dit werkte goed maar natuurlijk bleef het geluid nu in een loop afspelen. Het is de bedoeling dat pas als er een bosting gebeurd, de piep afspeelt. Daarom heb ik mijn arduino gelinkt aan mijn javascript logica. Dit is de code die ik nu in arduino heb:
+
+```javascript
+#define CHARACTERISTIC_BUZZER_UUID  "6e400007-b5a3-f393-e0a9-e50e24dcca9e"
+
+class BuzzerCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String value = pCharacteristic->getValue();
+
+    if (value.length() > 0 && value[0] == 1) {
+      tone(buzzerPin, 2500); 
+      delay(150);            
+      noTone(buzzerPin);
+    }
+  }
+};
+
+BLECharacteristic *pBuzzerCharacteristic = pService->createCharacteristic(
+  CHARACTERISTIC_BUZZER_UUID,
+  BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+);
+
+pBuzzerCharacteristic->setCallbacks(new BuzzerCallback());
+
+```
+
+Daarna moest ik een paar dingetjes aanpassen in mijn js files om dit te laten werken. Ik ben begonnen in de connection.js, daar heb ik mijn buzzer toegevoegd:
+
+```javascript
+let characteristicBuzzer = null;
+export const getBuzzerCharacteristic = () => characteristicBuzzer;
+const CHARACTERISTIC_BUZZER_UUID = '6e400007-b5a3-f393-e0a9-e50e24dcca9e';
+
+        try {
+            characteristicBuzzer = await service.getCharacteristic(CHARACTERISTIC_BUZZER_UUID);
+            console.log('Buzzer characteristic found');
+        } catch (error) {
+            characteristicBuzzer = null;
+            console.warn('Buzzer characteristic not available on device yet.');
+        }
+
+            characteristicBuzzer = null;
+
+```
+
+Daarna heb ik een js bestandje bijgemaakt voor de logica van de buzzer, genaamd buzzer-logic:
+
+mijn code kijkt of je verbonden bent, of het niet te snel piept achter elkaar, dan stuurt het een signaal naar de buzzer en doe dat in een wachtrij zodat er geen spam word gemaakt.
+
+```javascript
+/*==============================
+  Buzzer Logic
+==============================*/
+
+import { getBuzzerCharacteristic, isEsp32Connected } from './connection.js';
+
+const COLLISION_BUZZER_VALUE = 1;
+const COLLISION_COOLDOWN_MS = 350;
+
+let lastCollisionBuzzAt = 0;
+let writeQueue = Promise.resolve();
+
+const queueWrite = (characteristic, value) => {
+    writeQueue = writeQueue.then(async () => {
+        try {
+            await characteristic.writeValueWithoutResponse(new Uint8Array([value]));
+        } catch (error) {
+            console.error('Buzzer write failed:', error);
+        }
+    });
+};
+
+export const triggerCollisionBuzzer = () => {
+    if (!isEsp32Connected()) {
+        return;
+    }
+
+    const now = Date.now();
+    if (now - lastCollisionBuzzAt < COLLISION_COOLDOWN_MS) {
+        return;
+    }
+
+    const characteristicBuzzer = getBuzzerCharacteristic();
+    if (!characteristicBuzzer) {
+        return;
+    }
+
+    lastCollisionBuzzAt = now;
+    queueWrite(characteristicBuzzer, COLLISION_BUZZER_VALUE);
+};
+
+```
+
+En als laatste trigger ik de "triggerCollisionBuzzer();" functie als er een bosting gebeurd.
+
+
+## Extra hartjes 
+
+## Extra schildjes
+
+## Boost
+
 
 
 

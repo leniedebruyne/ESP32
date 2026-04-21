@@ -18,6 +18,7 @@ let characteristicR = null;
 let characteristicG = null;
 let characteristicB = null;
 let characteristicButton = null;
+let characteristicBuzzer = null;
 
 export const isEsp32Connected = () => isConnected;
 
@@ -26,6 +27,8 @@ export const getRgbCharacteristics = () => ({
     characteristicG,
     characteristicB,
 });
+
+export const getBuzzerCharacteristic = () => characteristicBuzzer;
 
 /*==============================
   UUIDs for ESP32 BLE Service
@@ -36,6 +39,7 @@ const CHARACTERISTIC_R_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_G_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_B_UUID = '6e400004-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_BUTTON_UUID = '6e400006-b5a3-f393-e0a9-e50e24dcca9e';
+const CHARACTERISTIC_BUZZER_UUID = '6e400007-b5a3-f393-e0a9-e50e24dcca9e';
 
 /*==============================
   DOM Elements
@@ -89,6 +93,14 @@ const handleClickConnect = async () => {
         console.log('Getting Button Characteristic...');
         characteristicButton = await service.getCharacteristic(CHARACTERISTIC_BUTTON_UUID);
 
+        try {
+            characteristicBuzzer = await service.getCharacteristic(CHARACTERISTIC_BUZZER_UUID);
+            console.log('Buzzer characteristic found');
+        } catch (error) {
+            characteristicBuzzer = null;
+            console.warn('Buzzer characteristic not available on device yet.');
+        }
+
         console.log('Starting Notifications...');
         await characteristicButton.startNotifications();
         characteristicButton.addEventListener('characteristicvaluechanged', handleNotificationButton);
@@ -133,6 +145,7 @@ const onDisconnected = () => {
     characteristicG = null;
     characteristicB = null;
     characteristicButton = null;
+    characteristicBuzzer = null;
     resetBalloonPosition();
     displayConnectionState();
     emitEsp32ConnectionChange();

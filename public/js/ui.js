@@ -4,6 +4,7 @@
 
 import { isEsp32Connected } from './connection.js';
 import { sendRgbIfConnected } from './rgb-control.js';
+import { triggerCollisionBuzzer } from './buzzer-logic.js';
 
 const cloudContainer = ensureCloudContainer();
 const maxClouds = 4;
@@ -322,6 +323,7 @@ function spawnBird() {
                         birdRect.top < balloonRect.bottom &&
                         birdRect.bottom > balloonRect.top
                     ) {
+                        triggerCollisionBuzzer();
                         loseLife();
                         cleanupBird();
                         return;
