@@ -9,11 +9,14 @@ let balloonPositionX = 0;
 let balloonPositionY = 0;
 let balloonSizeState = 1;
 
+// object to track the size states
 const BALLOON_SIZE_MAP = {
     0: 'balloon-size-small',
     1: 'balloon-size-medium',
     2: 'balloon-size-large',
 };
+
+// movement
 
 export const moveBalloonLeft = () => {
     balloonPositionX -= 5;
@@ -41,6 +44,8 @@ export const resetBalloonPosition = () => {
     updateBalloonPosition();
 };
 
+
+// balloon size
 export const setBalloonSize = (sizeState) => {
     if (!$balloonImg) return;
 
@@ -59,6 +64,8 @@ export const setBalloonSize = (sizeState) => {
     updateBalloonPosition();
 };
 
+
+// balloon position
 const updateBalloonPosition = () => {
     if (!$balloonContainer) return;
 
@@ -86,5 +93,12 @@ const updateBalloonPosition = () => {
     $balloonContainer.style.transform = `translate(${balloonPositionX}px, ${balloonPositionY}px)`;
 };
 
-resetBalloonPosition();
-setBalloonSize(balloonSizeState);
+
+
+function initballoon() {
+    resetBalloonPosition();
+    setBalloonSize(balloonSizeState);
+}
+
+
+initballoon();

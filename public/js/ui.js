@@ -6,25 +6,25 @@ import { isEsp32Connected } from './connection.js';
 import { sendRgbIfConnected } from './rgb-control.js';
 import { triggerCollisionBuzzer } from './buzzer-logic.js';
 
+// DOM Elements
 const cloudContainer = ensureCloudContainer();
-const maxClouds = 4;
-
 const gameArea = document.body;
 const balloon = document.querySelector('img[alt="Balloon Control"]');
-
 const timeLabel = document.querySelector('.hud .time');
 const bestLabel = document.querySelector('.hud .best');
 const livesLabel = document.querySelector('.hud .lives');
+
+const maxClouds = 4;
+const MAX_LIVES = 3;
+const BEST_TIME_STORAGE_KEY = 'balloon-best-time-seconds';
+const GAME_OVER_COUNTDOWN_SECONDS = 5;
+const BIRD_OFFSCREEN_PADDING = 100;
 
 let speedMultiplier = 1;
 let birdExists = false;
 let cloudIntervalId = null;
 let birdIntervalId = null;
 let activeBird = null;
-
-const MAX_LIVES = 3;
-const BEST_TIME_STORAGE_KEY = 'balloon-best-time-seconds';
-const GAME_OVER_COUNTDOWN_SECONDS = 5;
 
 let lives = MAX_LIVES;
 let gameStartTimestamp = null;
@@ -34,10 +34,11 @@ let isGameOverCountdownActive = false;
 let restartTimeoutId = null;
 let restartCountdownIntervalId = null;
 
-const BIRD_OFFSCREEN_PADDING = 100;
+// Overlay Elements
 const gameOverOverlay = ensureGameOverOverlay();
 const gameOverCountdownLabel = gameOverOverlay?.querySelector('.countdown');
 
+// Setup: Containers & Overlay
 function ensureCloudContainer() {
     let container = document.querySelector('.clouds');
 
@@ -69,69 +70,16 @@ function ensureGameOverOverlay() {
     return overlay;
 }
 
-function setGameOverOverlayVisible(isVisible) {
-    if (!gameOverOverlay) {
-        return;
-    }
-
-    gameOverOverlay.classList.toggle('hidden', !isVisible);
-}
-
-function updateGameOverCountdown(secondsLeft) {
-    if (!gameOverCountdownLabel) {
-        return;
-    }
-
-    gameOverCountdownLabel.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
-}
-
-function clearRoundRestartTimers() {
-    if (restartTimeoutId !== null) {
-        clearTimeout(restartTimeoutId);
-        restartTimeoutId = null;
-    }
-
-    if (restartCountdownIntervalId !== null) {
-        clearInterval(restartCountdownIntervalId);
-        restartCountdownIntervalId = null;
-    }
+// Connection State
+function isEsp32ConnectionActive() {
+    return isEsp32Connected();
 }
 
 function isGameplayActive() {
     return isEsp32ConnectionActive() && !isGameOverCountdownActive && lives > 0;
 }
 
-function startGameOverCountdown() {
-    clearRoundRestartTimers();
-    isGameOverCountdownActive = true;
-
-    let remainingSeconds = GAME_OVER_COUNTDOWN_SECONDS;
-    updateGameOverCountdown(remainingSeconds);
-    setGameOverOverlayVisible(true);
-
-    restartCountdownIntervalId = setInterval(() => {
-        remainingSeconds -= 1;
-        updateGameOverCountdown(remainingSeconds);
-    }, 1000);
-
-    restartTimeoutId = setTimeout(() => {
-        clearRoundRestartTimers();
-        setGameOverOverlayVisible(false);
-        isGameOverCountdownActive = false;
-
-        if (!isEsp32ConnectionActive()) {
-            return;
-        }
-
-        beginRound();
-        startAmbientSpawns();
-    }, GAME_OVER_COUNTDOWN_SECONDS * 1000);
-}
-
-function isEsp32ConnectionActive() {
-    return isEsp32Connected();
-}
-
+// Time & HUD
 function loadBestTime() {
     const stored = Number(localStorage.getItem(BEST_TIME_STORAGE_KEY));
     if (Number.isFinite(stored) && stored >= 0) {
@@ -203,6 +151,7 @@ function updateBestTimeIfNeeded(finalSeconds) {
     }
 }
 
+// Lives & Round
 function beginRound() {
     lives = MAX_LIVES;
     updateHudLives();
@@ -233,6 +182,80 @@ function loseLife() {
     }
 }
 
+function updateLedByLives() {
+    if (!isEsp32ConnectionActive()) return;
+
+    if (lives === 3) {
+        sendRgbIfConnected(0, 40, 0); // groen
+    }
+    else if (lives === 2) {
+        sendRgbIfConnected(60, 20, 0); // oranje
+    }
+    else if (lives === 1) {
+        sendRgbIfConnected(80, 0, 0); // rood
+    }
+    else if (lives === 0) {
+        sendRgbIfConnected(0, 0, 0); // uit
+    }
+}
+
+// Game Over Overlay & Restart
+function setGameOverOverlayVisible(isVisible) {
+    if (!gameOverOverlay) {
+        return;
+    }
+
+    gameOverOverlay.classList.toggle('hidden', !isVisible);
+}
+
+function updateGameOverCountdown(secondsLeft) {
+    if (!gameOverCountdownLabel) {
+        return;
+    }
+
+    gameOverCountdownLabel.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
+}
+
+function clearRoundRestartTimers() {
+    if (restartTimeoutId !== null) {
+        clearTimeout(restartTimeoutId);
+        restartTimeoutId = null;
+    }
+
+    if (restartCountdownIntervalId !== null) {
+        clearInterval(restartCountdownIntervalId);
+        restartCountdownIntervalId = null;
+    }
+}
+
+function startGameOverCountdown() {
+    clearRoundRestartTimers();
+    isGameOverCountdownActive = true;
+
+    let remainingSeconds = GAME_OVER_COUNTDOWN_SECONDS;
+    updateGameOverCountdown(remainingSeconds);
+    setGameOverOverlayVisible(true);
+
+    restartCountdownIntervalId = setInterval(() => {
+        remainingSeconds -= 1;
+        updateGameOverCountdown(remainingSeconds);
+    }, 1000);
+
+    restartTimeoutId = setTimeout(() => {
+        clearRoundRestartTimers();
+        setGameOverOverlayVisible(false);
+        isGameOverCountdownActive = false;
+
+        if (!isEsp32ConnectionActive()) {
+            return;
+        }
+
+        beginRound();
+        startAmbientSpawns();
+    }, GAME_OVER_COUNTDOWN_SECONDS * 1000);
+}
+
+// Ambient Spawns: Clouds & Birds
 function spawnCloud() {
     if (!isEsp32ConnectionActive()) {
         return;
@@ -308,32 +331,26 @@ function spawnBird() {
         const step = baseSpeed * speedMultiplier * direction;
         const steps = Math.max(1, Math.ceil(Math.abs(step)));
 
-        try {
-            for (let i = 0; i < steps; i++) {
-                pos += direction;
-                bird.style.left = pos + 'px';
+        for (let i = 0; i < steps; i++) {
+            pos += direction;
+            bird.style.left = pos + 'px';
 
-                if (balloon) {
-                    const birdRect = bird.getBoundingClientRect();
-                    const balloonRect = balloon.getBoundingClientRect();
+            if (balloon) {
+                const birdRect = bird.getBoundingClientRect();
+                const balloonRect = balloon.getBoundingClientRect();
 
-                    if (
-                        birdRect.left < balloonRect.right &&
-                        birdRect.right > balloonRect.left &&
-                        birdRect.top < balloonRect.bottom &&
-                        birdRect.bottom > balloonRect.top
-                    ) {
-                        triggerCollisionBuzzer();
-                        loseLife();
-                        cleanupBird();
-                        return;
-                    }
+                if (
+                    birdRect.left < balloonRect.right &&
+                    birdRect.right > balloonRect.left &&
+                    birdRect.top < balloonRect.bottom &&
+                    birdRect.bottom > balloonRect.top
+                ) {
+                    triggerCollisionBuzzer();
+                    loseLife();
+                    cleanupBird();
+                    return;
                 }
             }
-        } catch (error) {
-            console.error('Bird animation failed:', error);
-            cleanupBird();
-            return;
         }
 
         if ((direction === 1 && pos > window.innerWidth + BIRD_OFFSCREEN_PADDING) ||
@@ -348,6 +365,7 @@ function spawnBird() {
     animate();
 }
 
+// Ambient Spawn Lifecycle
 function startAmbientSpawns() {
     if (!isGameplayActive()) {
         return;
@@ -384,6 +402,7 @@ function stopAmbientSpawns() {
     birdExists = false;
 }
 
+// Connection Sync
 function syncAmbientSpawns() {
     if (isEsp32ConnectionActive()) {
         if (isGameOverCountdownActive) {
@@ -403,29 +422,19 @@ function syncAmbientSpawns() {
     }
 }
 
-function updateLedByLives() {
-    if (!isEsp32ConnectionActive()) return;
 
-    if (lives === 3) {
-        sendRgbIfConnected(0, 40, 0); // groen
-    }
-    else if (lives === 2) {
-        sendRgbIfConnected(60, 20, 0); // oranje
-    }
-    else if (lives === 1) {
-        sendRgbIfConnected(80, 0, 0); // rood
-    }
-    else if (lives === 0) {
-        sendRgbIfConnected(0, 0, 0); // uit
-    }
+function initUi() {
+    updateHudBest();
+    updateHudLives();
+    updateHudTime(0);
+
+    window.addEventListener('esp32-connection-change', syncAmbientSpawns);
+    syncAmbientSpawns();
 }
 
-updateHudBest();
-updateHudLives();
-updateHudTime(0);
+initUi();
 
-window.addEventListener('esp32-connection-change', syncAmbientSpawns);
-syncAmbientSpawns();
+
 
 window.setGameSpeedMultiplier = (value) => {
     const parsed = Number(value);
@@ -433,3 +442,4 @@ window.setGameSpeedMultiplier = (value) => {
         speedMultiplier = parsed;
     }
 };
+

@@ -14,16 +14,19 @@ const $colorPreview = document.getElementById("colorPreview");
 
 let writeQueue = Promise.resolve();
 
+// Queues BLE writes so RGB updates are sent in order.
 const queueWrite = (characteristic, value) => {
-    writeQueue = writeQueue.then(async () => {
-        try {
-            await characteristic.writeValueWithoutResponse(new Uint8Array([value]));
-        } catch (error) {
-            console.error('Write failed:', error);
-        }
-    });
+    writeQueue = writeQueue.then(() =>
+        characteristic
+            .writeValueWithoutResponse(new Uint8Array([value]))
+            .catch(error => {
+                console.error('Write failed:', error);
+            })
+    );
 };
 
+
+// Updates the preview swatch to match the current slider values.
 const updateColorPreview = () => {
     const r = parseInt($r.value);
     const g = parseInt($g.value);
@@ -31,6 +34,8 @@ const updateColorPreview = () => {
     $colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 };
 
+
+// Sets RGB slider/value labels in the UI and refreshes the preview.
 const setRgbValues = (r, g, b) => {
     if (!$r || !$g || !$b) return;
 
@@ -45,6 +50,8 @@ const setRgbValues = (r, g, b) => {
     updateColorPreview();
 };
 
+
+// Sends RGB values to the device when a BLE connection is active.
 export const sendRgbIfConnected = (r, g, b) => {
     if (!isEsp32Connected()) return;
 
@@ -55,6 +62,8 @@ export const sendRgbIfConnected = (r, g, b) => {
     if (characteristicB) queueWrite(characteristicB, b);
 };
 
+
+// Turns the RGB LED off by writing zero to all channels.
 export const turnRgbOff = () => {
     const { characteristicR, characteristicG, characteristicB } = getRgbCharacteristics();
 
@@ -63,11 +72,15 @@ export const turnRgbOff = () => {
     if (characteristicB) queueWrite(characteristicB, 0);
 };
 
+
+// Sets the default LED color to red after connecting.
 const setLedRed = () => {
     setRgbValues(255, 0, 0);
     sendRgbIfConnected(255, 0, 0);
 };
 
+
+// Handles red slider input and writes the new red value.
 const handleInputR = async () => {
     const value = parseInt($r.value);
     $rValue.textContent = value;
@@ -75,10 +88,13 @@ const handleInputR = async () => {
 
     const { characteristicR } = getRgbCharacteristics();
 
-    if (!isEsp32Connected() || !characteristicR) return;
+    if (!isEsp32Connected()) return;
+    if (!characteristicR) return;
+
     queueWrite(characteristicR, value);
 };
 
+// Handles green slider input and writes the new green value.
 const handleInputG = async () => {
     const value = parseInt($g.value);
     $gValue.textContent = value;
@@ -86,10 +102,13 @@ const handleInputG = async () => {
 
     const { characteristicG } = getRgbCharacteristics();
 
-    if (!isEsp32Connected() || !characteristicG) return;
+    if (!isEsp32Connected()) return;
+    if (!characteristicG) return;
+
     queueWrite(characteristicG, value);
 };
 
+// Handles blue slider input and writes the new blue value.
 const handleInputB = async () => {
     const value = parseInt($b.value);
     $bValue.textContent = value;
@@ -97,12 +116,18 @@ const handleInputB = async () => {
 
     const { characteristicB } = getRgbCharacteristics();
 
-    if (!isEsp32Connected() || !characteristicB) return;
+    if (!isEsp32Connected()) return;
+    if (!characteristicB) return;
+
     queueWrite(characteristicB, value);
 };
 
+// Initializes RGB control listeners and connection sync behavior.
 const initRgbControl = () => {
-    if (!$r || !$g || !$b || !$colorPreview) return;
+    if (!$r) return;
+    if (!$g) return;
+    if (!$b) return;
+    if (!$colorPreview) return;
 
     setLedRed();
     $r.addEventListener("input", handleInputR);
@@ -114,9 +139,10 @@ const initRgbControl = () => {
             setLedRed();
         }
     });
+
+    window.addEventListener('esp32-rgb-off-request', () => {
+        turnRgbOff();
+    });
 };
 
 initRgbControl();
-
-window.sendRgbIfConnected = sendRgbIfConnected;
-window.turnRgbOff = turnRgbOff;

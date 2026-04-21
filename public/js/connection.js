@@ -122,10 +122,7 @@ const handleClickConnect = async () => {
 
 const handleClickDisconnect = async () => {
     if (bluetoothDevice && bluetoothDevice.gatt.connected) {
-
-        if (typeof window.turnRgbOff === 'function') {
-            window.turnRgbOff();
-        }
+        requestRgbOff();
 
         await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -135,10 +132,7 @@ const handleClickDisconnect = async () => {
 
 const onDisconnected = () => {
     console.log('Bluetooth Device disconnected');
-
-    if (typeof window.turnRgbOff === 'function') {
-        window.turnRgbOff();
-    }
+    requestRgbOff();
 
     isConnected = false;
     bluetoothDevice = null;
@@ -198,8 +192,9 @@ const displayConnectionState = () => {
     }
 };
 
-// Keep a window alias for compatibility with existing event/UI integrations.
-window.isEsp32Connected = isEsp32Connected;
+const requestRgbOff = () => {
+    window.dispatchEvent(new Event('esp32-rgb-off-request'));
+};
 
 const emitEsp32ConnectionChange = () => {
     window.dispatchEvent(new CustomEvent('esp32-connection-change', {
