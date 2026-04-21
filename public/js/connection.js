@@ -8,6 +8,7 @@ import {
     moveBalloonRight,
     moveBalloonUp,
     resetBalloonPosition,
+    setBalloonSize,
 } from './balloon-control.js';
 
 const hasWebBluetooth = "bluetooth" in navigator;
@@ -154,8 +155,9 @@ const onDisconnected = () => {
 const handleNotificationButton = (event) => {
     const value = event.target.value;
     const buttonValue = value.getUint8(0);
+    const sizeValue = value.byteLength > 1 ? value.getUint8(1) : null;
 
-    console.log('Button notify received:', buttonValue);
+    console.log('Button notify received:', { buttonValue, sizeValue });
 
     if (buttonValue === 0) {
         moveBalloonLeft();
@@ -165,6 +167,10 @@ const handleNotificationButton = (event) => {
         moveBalloonUp();
     } else if (buttonValue === 4) {
         moveBalloonDown();
+    }
+
+    if (sizeValue !== null) {
+        setBalloonSize(sizeValue);
     }
 };
 

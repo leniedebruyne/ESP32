@@ -7,6 +7,13 @@ const $balloonContainer = $balloonImg?.parentElement;
 
 let balloonPositionX = 0;
 let balloonPositionY = 0;
+let balloonSizeState = 1;
+
+const BALLOON_SIZE_MAP = {
+    0: 'balloon-size-small',
+    1: 'balloon-size-medium',
+    2: 'balloon-size-large',
+};
 
 export const moveBalloonLeft = () => {
     balloonPositionX -= 5;
@@ -31,6 +38,24 @@ export const moveBalloonDown = () => {
 export const resetBalloonPosition = () => {
     balloonPositionX = 0;
     balloonPositionY = 0;
+    updateBalloonPosition();
+};
+
+export const setBalloonSize = (sizeState) => {
+    if (!$balloonImg) return;
+
+    const nextSizeState = Number(sizeState);
+    if (!Number.isInteger(nextSizeState) || !(nextSizeState in BALLOON_SIZE_MAP)) {
+        return;
+    }
+
+    balloonSizeState = nextSizeState;
+
+    Object.values(BALLOON_SIZE_MAP).forEach((className) => {
+        $balloonImg.classList.remove(className);
+    });
+
+    $balloonImg.classList.add(BALLOON_SIZE_MAP[balloonSizeState]);
     updateBalloonPosition();
 };
 
@@ -62,3 +87,4 @@ const updateBalloonPosition = () => {
 };
 
 resetBalloonPosition();
+setBalloonSize(balloonSizeState);

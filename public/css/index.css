@@ -75,6 +75,21 @@ body {
     max-width: 210px;
 }
 
+.game-stage img.balloon-size-small {
+    width: min(24vw, 150px);
+    max-width: 150px;
+}
+
+.game-stage img.balloon-size-medium {
+    width: min(34vw, 210px);
+    max-width: 210px;
+}
+
+.game-stage img.balloon-size-large {
+    width: min(44vw, 270px);
+    max-width: 270px;
+}
+
 .hud {
     position: absolute;
     top: 0;

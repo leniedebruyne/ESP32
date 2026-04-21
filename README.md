@@ -846,6 +846,89 @@ export const triggerCollisionBuzzer = () => {
 
 En als laatste trigger ik de "triggerCollisionBuzzer();" functie als er een bosting gebeurd.
 
+## Array grootte ballon
+Omdat ik graag weer wil werken met het krijgen van childjes en hartjes, was het nodig om op een manier je ballon klein middel en groot te kunnen maken. Ik heb ervoor gekozen om dit met een button te doen, zo kun je makkelijk door de array cyclen. De button zit op pin 17, dus dit heb ik eerst toegoegd in mijn arduino. 
+
+```javascript
+const int sizeButtonPin = 17;
+
+int sizeState = 0; 
+bool lastButtonState = HIGH;
+
+pinMode(sizeButtonPin, INPUT_PULLUP);
+
+int sizeButtonState = digitalRead(sizeButtonPin);
+
+if (lastButtonState == HIGH && sizeButtonState == LOW) {
+  sizeState = (sizeState + 1) % 3;
+}
+
+lastButtonState = sizeButtonState;
+```
+
+In mijn connectie.js heb ik deze informatie dan opgevangen, zodat ik dit kon gaan gebruiken in mijn javascript.
+
+```javascript
+import {
+    moveBalloonDown,
+    moveBalloonLeft,
+    moveBalloonRight,
+    moveBalloonUp,
+    resetBalloonPosition,
+    setBalloonSize,
+} from './balloon-control.js';
+```
+
+Daarna heb ik er in javascript voor gezorgt dat de ballon van grootte veranderd door de css classes te veranderen. 
+
+```javascript
+let balloonSizeState = 1;
+
+const BALLOON_SIZE_MAP = {
+    0: 'balloon-size-small',
+    1: 'balloon-size-medium',
+    2: 'balloon-size-large',
+};
+
+export const setBalloonSize = (sizeState) => {
+    if (!$balloonImg) return;
+
+    const nextSizeState = Number(sizeState);
+    if (!Number.isInteger(nextSizeState) || !(nextSizeState in BALLOON_SIZE_MAP)) {
+        return;
+    }
+
+    balloonSizeState = nextSizeState;
+
+    Object.values(BALLOON_SIZE_MAP).forEach((className) => {
+        $balloonImg.classList.remove(className);
+    });
+
+    $balloonImg.classList.add(BALLOON_SIZE_MAP[balloonSizeState]);
+    updateBalloonPosition();
+};
+```
+
+En natuurlijk moest ik deze CSS classes ook aanmaken en stylen.
+
+```javascript
+.game-stage img.balloon-size-small {
+    width: min(24vw, 150px);
+    max-width: 150px;
+}
+
+.game-stage img.balloon-size-medium {
+    width: min(34vw, 210px);
+    max-width: 210px;
+}
+
+.game-stage img.balloon-size-large {
+    width: min(44vw, 270px);
+    max-width: 270px;
+}
+```
+
+
 
 ## Extra hartjes 
 
