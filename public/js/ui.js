@@ -10,12 +10,14 @@ import { triggerCollisionBuzzer } from './buzzer-logic.js';
 const cloudContainer = ensureCloudContainer();
 const gameArea = document.body;
 const balloon = document.querySelector('img[alt="Balloon Control"]');
+const balloonShell = document.querySelector('.game-stage.balloon') || balloon?.parentElement;
 const timeLabel = document.querySelector('.hud .time');
 const bestLabel = document.querySelector('.hud .best');
 const livesLabel = document.querySelector('.hud .lives');
 
 const maxClouds = 4;
 const MAX_LIVES = 3;
+const SHIELD_DURATION_MS = 8000;
 const BEST_TIME_STORAGE_KEY = 'balloon-best-time-seconds';
 const GAME_OVER_COUNTDOWN_SECONDS = 5;
 const BIRD_OFFSCREEN_PADDING = 100;
@@ -25,6 +27,8 @@ let birdExists = false;
 let cloudIntervalId = null;
 let birdIntervalId = null;
 let activeBird = null;
+let shieldTimeoutId = null;
+let isShieldActive = false;
 
 let lives = MAX_LIVES;
 let gameStartTimestamp = null;
@@ -125,6 +129,43 @@ function updateHudLives() {
     livesLabel.textContent = [full, empty].filter(Boolean).join(' ').trim();
 }
 
+function setShieldVisualState(active) {
+    if (!balloonShell) {
+        return;
+    }
+
+    balloonShell.classList.toggle('shielded', active);
+}
+
+function clearShieldTimer() {
+    if (shieldTimeoutId !== null) {
+        clearTimeout(shieldTimeoutId);
+        shieldTimeoutId = null;
+    }
+}
+
+export function activateShield() {
+    if (!balloonShell) {
+        return;
+    }
+
+    clearShieldTimer();
+    isShieldActive = true;
+    setShieldVisualState(true);
+
+    shieldTimeoutId = setTimeout(() => {
+        shieldTimeoutId = null;
+        isShieldActive = false;
+        setShieldVisualState(false);
+    }, SHIELD_DURATION_MS);
+}
+
+export function clearShield() {
+    clearShieldTimer();
+    isShieldActive = false;
+    setShieldVisualState(false);
+}
+
 function getElapsedSeconds() {
     if (!gameStartTimestamp) {
         return 0;
@@ -160,6 +201,7 @@ function updateBestTimeIfNeeded(finalSeconds) {
 
 // Lives & Round
 function beginRound() {
+    clearShield();
     lives = MAX_LIVES;
     updateHudLives();
     updateLedByLives();
@@ -174,7 +216,7 @@ function endRound() {
 }
 
 function loseLife() {
-    if (!isGameplayActive()) {
+    if (!isGameplayActive() || isShieldActive) {
         return;
     }
 
@@ -363,6 +405,11 @@ function spawnBird() {
                     birdRect.top < balloonRect.bottom &&
                     birdRect.bottom > balloonRect.top
                 ) {
+                    if (isShieldActive) {
+                        cleanupBird();
+                        return;
+                    }
+
                     triggerCollisionBuzzer();
                     loseLife();
                     cleanupBird();
@@ -435,6 +482,7 @@ function syncAmbientSpawns() {
         isGameOverCountdownActive = false;
         endRound();
         stopAmbientSpawns();
+        clearShield();
         lives = MAX_LIVES;
         updateHudLives();
     }
