@@ -1,5 +1,6 @@
 import { isEsp32Connected } from './connection.js';
 import { onBalloonSizeChange } from './balloon-control.js';
+import { blinkRgb } from './rgb-control.js';
 import { activateShield, gainLife } from './ui.js';
 
 // ==== SHIELD SETTINGS =====
@@ -64,8 +65,10 @@ function trackCollectible(el, itemType) {
             if (isRectOverlapping(itemRect, balloonRect) && canCollectItem(itemType)) {
                 if (itemType === 'heart') {
                     gainLife();
+                    blinkRgb(255, 105, 180, 2);
                 } else if (itemType === 'shield') {
                     activateShield();
+                    blinkRgb(0, 120, 255, 2);
                 }
 
                 el.remove();
