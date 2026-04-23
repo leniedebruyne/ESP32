@@ -7,8 +7,11 @@ const $balloonContainer = $balloonImg?.parentElement;
 
 let balloonPositionX = 0;
 let balloonPositionY = 0;
+let balloonTiltDegrees = 0;
 let balloonSizeState = 1;
 const balloonSizeListeners = new Set();
+const BALLOON_MOVE_STEP = 10;
+const BALLOON_MAX_TILT_DEGREES = 10;
 
 // object to track the size states
 const BALLOON_SIZE_MAP = {
@@ -20,28 +23,41 @@ const BALLOON_SIZE_MAP = {
 // movement
 
 export const moveBalloonLeft = () => {
-    balloonPositionX -= 5;
+    balloonPositionX -= BALLOON_MOVE_STEP;
     updateBalloonPosition();
 };
 
 export const moveBalloonRight = () => {
-    balloonPositionX += 5;
+    balloonPositionX += BALLOON_MOVE_STEP;
     updateBalloonPosition();
 };
 
 export const moveBalloonUp = () => {
-    balloonPositionY -= 5;
+    balloonPositionY -= BALLOON_MOVE_STEP;
     updateBalloonPosition();
 };
 
 export const moveBalloonDown = () => {
-    balloonPositionY += 5;
+    balloonPositionY += BALLOON_MOVE_STEP;
+    updateBalloonPosition();
+};
+
+export const setBalloonTilt = (direction) => {
+    if (direction === 'left') {
+        balloonTiltDegrees = -BALLOON_MAX_TILT_DEGREES;
+    } else if (direction === 'right') {
+        balloonTiltDegrees = BALLOON_MAX_TILT_DEGREES;
+    } else {
+        balloonTiltDegrees = 0;
+    }
+
     updateBalloonPosition();
 };
 
 export const resetBalloonPosition = () => {
     balloonPositionX = 0;
     balloonPositionY = 0;
+    balloonTiltDegrees = 0;
     updateBalloonPosition();
 };
 
@@ -105,7 +121,8 @@ const updateBalloonPosition = () => {
 
     balloonPositionX = Math.max(minX, Math.min(maxX, balloonPositionX));
     balloonPositionY = Math.max(minY, Math.min(maxY, balloonPositionY));
-    $balloonContainer.style.transform = `translate(${balloonPositionX}px, ${balloonPositionY}px)`;
+
+    $balloonContainer.style.transform = `translate3d(${balloonPositionX}px, ${balloonPositionY}px, 0) rotate(${balloonTiltDegrees}deg)`;
 };
 
 const notifyBalloonSizeChange = () => {

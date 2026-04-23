@@ -68,26 +68,30 @@ body {
     position: relative;
     z-index: 3;
     pointer-events: none;
+    transform-origin: center center;
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
 }
 
 .game-stage img {
     width: min(34vw, 210px);
     max-width: 210px;
+    transform-origin: 50% 72%;
 }
 
 .game-stage img.balloon-size-small {
-    width: min(24vw, 150px);
-    max-width: 150px;
+    width: min(15vw, 90px);
+    max-width: 90px;
 }
 
 .game-stage img.balloon-size-medium {
-    width: min(34vw, 210px);
-    max-width: 210px;
+    width: min(20vw, 120px);
+    max-width: 120px;
 }
 
 .game-stage img.balloon-size-large {
-    width: min(44vw, 270px);
-    max-width: 270px;
+    width: min(26vw, 160px);
+    max-width: 160px;
 }
 
 .hud {

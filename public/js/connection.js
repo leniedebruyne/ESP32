@@ -8,6 +8,7 @@ import {
     moveBalloonRight,
     moveBalloonUp,
     resetBalloonPosition,
+    setBalloonTilt,
     setBalloonSize,
 } from './balloon-control.js';
 
@@ -155,8 +156,12 @@ const handleNotificationButton = (event) => {
 
     if (buttonValue === 0) {
         moveBalloonLeft();
+        setBalloonTilt('left');
     } else if (buttonValue === 1) {
         moveBalloonRight();
+        setBalloonTilt('right');
+    } else if (buttonValue === 2) {
+        setBalloonTilt('neutral');
     } else if (buttonValue === 3) {
         moveBalloonUp();
     } else if (buttonValue === 4) {
