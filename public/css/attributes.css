@@ -1,0 +1,41 @@
+.balloon.shielded {
+    position: relative;
+}
+
+.balloon.shielded::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 250px;
+    height: 500px;
+
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+
+    box-shadow:
+        0 0 25px 12px rgba(80, 120, 255, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.4);
+
+    animation: shieldPulse 1.2s ease-in-out infinite;
+}
+
+.falling-shield {
+    position: fixed;
+    top: -90px;
+    z-index: 11;
+    pointer-events: none;
+    will-change: transform;
+    animation: shield-fall var(--shield-fall-duration, 4000ms) linear forwards;
+}
+
+.falling-heart {
+    position: fixed;
+    top: -90px;
+    z-index: 11;
+    pointer-events: none;
+    will-change: transform;
+    animation: shield-fall var(--shield-fall-duration, 4000ms) linear forwards;
+}
