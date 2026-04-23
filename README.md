@@ -928,6 +928,43 @@ En natuurlijk moest ik deze CSS classes ook aanmaken en stylen.
 }
 ```
 
+## klein -> Snel, Groot -> traag
+Als volgende is het de bedoeling dat als de ballon klein is, de omgeving sneller gaat, en aks de ballon traag is, de omgeving trager gaat. 
+
+Ik ben begonnen met het maken van een nieuwe js file genaamd balloon-speed-sync.js, in deze file heb ik een object die een snelheid linkt aan de grootte van de ballon. 
+
+```javascript
+import { onBalloonSizeChange } from './balloon-control.js';
+import { setGameSpeedMultiplier } from './ui.js';
+
+const SPEED_BY_SIZE_STATE = {
+    0: 1.5, // small balloon: faster ambience
+    1: 1.0,  // medium balloon: normal ambience
+    2: 0.5,  // large balloon: slower ambience
+};
+
+const DEFAULT_SPEED_MULTIPLIER = 1.0;
+
+function getSpeedMultiplierForSize(sizeState) {
+    const numericSizeState = Number(sizeState);
+
+    if (Number.isInteger(numericSizeState) && numericSizeState in SPEED_BY_SIZE_STATE) {
+        return SPEED_BY_SIZE_STATE[numericSizeState];
+    }
+
+    return DEFAULT_SPEED_MULTIPLIER;
+}
+
+function initBalloonSpeedSync() {
+    onBalloonSizeChange((sizeState) => {
+        setGameSpeedMultiplier(getSpeedMultiplierForSize(sizeState));
+    });
+}
+
+initBalloonSpeedSync();
+```
+
+
 
 
 ## Extra hartjes 

@@ -8,6 +8,7 @@ const $balloonContainer = $balloonImg?.parentElement;
 let balloonPositionX = 0;
 let balloonPositionY = 0;
 let balloonSizeState = 1;
+const balloonSizeListeners = new Set();
 
 // object to track the size states
 const BALLOON_SIZE_MAP = {
@@ -62,6 +63,20 @@ export const setBalloonSize = (sizeState) => {
 
     $balloonImg.classList.add(BALLOON_SIZE_MAP[balloonSizeState]);
     updateBalloonPosition();
+    notifyBalloonSizeChange();
+};
+
+export const onBalloonSizeChange = (listener) => {
+    if (typeof listener !== 'function') {
+        return () => { };
+    }
+
+    balloonSizeListeners.add(listener);
+    listener(balloonSizeState);
+
+    return () => {
+        balloonSizeListeners.delete(listener);
+    };
 };
 
 
@@ -91,6 +106,16 @@ const updateBalloonPosition = () => {
     balloonPositionX = Math.max(minX, Math.min(maxX, balloonPositionX));
     balloonPositionY = Math.max(minY, Math.min(maxY, balloonPositionY));
     $balloonContainer.style.transform = `translate(${balloonPositionX}px, ${balloonPositionY}px)`;
+};
+
+const notifyBalloonSizeChange = () => {
+    balloonSizeListeners.forEach((listener) => {
+        try {
+            listener(balloonSizeState);
+        } catch (error) {
+            console.error('Balloon size listener failed:', error);
+        }
+    });
 };
 
 

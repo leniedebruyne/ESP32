@@ -34,6 +34,13 @@ let isGameOverCountdownActive = false;
 let restartTimeoutId = null;
 let restartCountdownIntervalId = null;
 
+export const setGameSpeedMultiplier = (value) => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+        speedMultiplier = parsed;
+    }
+};
+
 // Overlay Elements
 const gameOverOverlay = ensureGameOverOverlay();
 const gameOverCountdownLabel = gameOverOverlay?.querySelector('.countdown');
@@ -433,13 +440,4 @@ function initUi() {
 }
 
 initUi();
-
-
-
-window.setGameSpeedMultiplier = (value) => {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed > 0) {
-        speedMultiplier = parsed;
-    }
-};
 
