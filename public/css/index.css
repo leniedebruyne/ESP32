@@ -288,6 +288,24 @@ button:disabled {
     object-fit: contain;
 }
 
+.falling-shield {
+    position: fixed;
+    top: -90px;
+    z-index: 11;
+    pointer-events: none;
+    will-change: transform;
+    animation: shield-fall var(--shield-fall-duration, 4000ms) linear forwards;
+}
+
+.falling-heart {
+    position: fixed;
+    top: -90px;
+    z-index: 11;
+    pointer-events: none;
+    will-change: transform;
+    animation: shield-fall var(--shield-fall-duration, 4000ms) linear forwards;
+}
+
 .game-over-overlay {
     position: fixed;
     inset: 0;
@@ -361,5 +379,25 @@ button:disabled {
     100% {
         transform: translateY(-120vh) scale(var(--scale, 1));
         opacity: 0;
+    }
+}
+
+@keyframes shield-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(calc(100vh + 130px)) rotate(280deg);
+    }
+}
+
+@keyframes heart-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(calc(100vh + 130px)) rotate(280deg);
     }
 }
