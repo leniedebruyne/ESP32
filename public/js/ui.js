@@ -189,6 +189,17 @@ function loseLife() {
     }
 }
 
+export function gainLife() {
+    if (!isGameplayActive() || lives >= MAX_LIVES) {
+        return false;
+    }
+
+    lives += 1;
+    updateHudLives();
+    updateLedByLives();
+    return true;
+}
+
 function updateLedByLives() {
     if (!isEsp32ConnectionActive()) return;
 

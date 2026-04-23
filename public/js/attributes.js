@@ -1,4 +1,6 @@
 import { isEsp32Connected } from './connection.js';
+import { onBalloonSizeChange } from './balloon-control.js';
+import { gainLife } from './ui.js';
 
 // ==== SHIELD SETTINGS =====
 const SHIELD_DELAY_MIN = 8000;
@@ -16,10 +18,63 @@ let heartTimeoutId = null;
 
 let isShieldActive = false;
 let isHeartActive = false;
+let currentBalloonSizeState = 1;
+
+const BALLOON_SIZE_FOR_ITEM = {
+    heart: 0,
+    shield: 2,
+};
+
+onBalloonSizeChange((sizeState) => {
+    currentBalloonSizeState = Number(sizeState);
+});
 
 // ===== HELPERS =====
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function getBalloonElement() {
+    return document.querySelector('img[alt="Balloon Control"]');
+}
+
+function isRectOverlapping(firstRect, secondRect) {
+    return firstRect.left < secondRect.right
+        && firstRect.right > secondRect.left
+        && firstRect.top < secondRect.bottom
+        && firstRect.bottom > secondRect.top;
+}
+
+function canCollectItem(itemType) {
+    return currentBalloonSizeState === BALLOON_SIZE_FOR_ITEM[itemType];
+}
+
+function trackCollectible(el, itemType) {
+    const animate = () => {
+        if (!el.isConnected) {
+            return;
+        }
+
+        const balloon = getBalloonElement();
+
+        if (balloon) {
+            const itemRect = el.getBoundingClientRect();
+            const balloonRect = balloon.getBoundingClientRect();
+
+            if (isRectOverlapping(itemRect, balloonRect) && canCollectItem(itemType)) {
+                if (itemType === 'heart') {
+                    gainLife();
+                }
+
+                el.remove();
+                return;
+            }
+        }
+
+        window.requestAnimationFrame(animate);
+    };
+
+    window.requestAnimationFrame(animate);
 }
 
 // ===== SPAWN SHIELD =====
@@ -36,6 +91,7 @@ function spawnShield() {
     el.style.left = `${left}px`;
 
     document.body.appendChild(el);
+    trackCollectible(el, 'shield');
 
     el.addEventListener('animationend', () => el.remove(), { once: true });
 }
@@ -54,6 +110,7 @@ function spawnHeart() {
     el.style.left = `${left}px`;
 
     document.body.appendChild(el);
+    trackCollectible(el, 'heart');
 
     el.addEventListener('animationend', () => el.remove(), { once: true });
 }
@@ -107,7 +164,7 @@ export function stopHeartDrops() {
 }
 
 // ===== SYNC MET ESP =====
- function sync() {
+function sync() {
     if (isEsp32Connected()) {
         startShieldDrops();
         startHeartDrops();
@@ -115,7 +172,7 @@ export function stopHeartDrops() {
         stopShieldDrops();
         stopHeartDrops();
     }
-} 
+}
 
 window.addEventListener('esp32-connection-change', sync);
 sync(); 
