@@ -21,6 +21,7 @@ let characteristicG = null;
 let characteristicB = null;
 let characteristicButton = null;
 let characteristicBuzzer = null;
+let characteristicLight = null;
 
 export const isEsp32Connected = () => isConnected;
 
@@ -95,6 +96,9 @@ const handleClickConnect = async () => {
         console.log('Getting Button Characteristic...');
         characteristicButton = await service.getCharacteristic(CHARACTERISTIC_BUTTON_UUID);
 
+        console.log('Getting Light Characteristic...');
+        characteristicLight = await service.getCharacteristic('6e400008-b5a3-f393-e0a9-e50e24dcca9e');
+
         try {
             characteristicBuzzer = await service.getCharacteristic(CHARACTERISTIC_BUZZER_UUID);
             console.log('Buzzer characteristic found');
@@ -106,6 +110,8 @@ const handleClickConnect = async () => {
         console.log('Starting Notifications...');
         await characteristicButton.startNotifications();
         characteristicButton.addEventListener('characteristicvaluechanged', handleNotificationButton);
+        await characteristicLight.startNotifications();
+        characteristicLight.addEventListener('characteristicvaluechanged', handleNotificationLight);
 
         isConnected = true;
         $deviceName.textContent = bluetoothDevice.name || 'Unknown Device';
@@ -142,6 +148,7 @@ const onDisconnected = () => {
     characteristicB = null;
     characteristicButton = null;
     characteristicBuzzer = null;
+    characteristicLight = null;
     resetBalloonPosition();
     displayConnectionState();
     emitEsp32ConnectionChange();
@@ -171,6 +178,20 @@ const handleNotificationButton = (event) => {
     if (sizeValue !== null) {
         setBalloonSize(sizeValue);
     }
+};
+
+const handleNotificationLight = (event) => {
+    const value = event.target.value;
+    const lightValue = value.getUint8(0);
+
+    console.log('Light notify received:', lightValue);
+
+    window.dispatchEvent(new CustomEvent('esp32-light-change', {
+        detail: {
+            lightValue,
+            isLightOn: lightValue === 1,
+        },
+    }));
 };
 
 /*==============================
