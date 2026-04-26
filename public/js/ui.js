@@ -23,6 +23,7 @@ const GAME_OVER_COUNTDOWN_SECONDS = 5;
 const BIRD_OFFSCREEN_PADDING = 100;
 
 let speedMultiplier = 1;
+let boostMultiplier = 1;
 let birdExists = false;
 let cloudIntervalId = null;
 let birdIntervalId = null;
@@ -44,6 +45,17 @@ export const setGameSpeedMultiplier = (value) => {
         speedMultiplier = parsed;
     }
 };
+
+export const setBoostSpeedMultiplier = (value) => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+        boostMultiplier = parsed;
+    }
+};
+
+function getEffectiveSpeedMultiplier() {
+    return speedMultiplier * boostMultiplier;
+}
 
 // Overlay Elements
 const gameOverOverlay = ensureGameOverOverlay();
@@ -338,7 +350,7 @@ function spawnCloud() {
     const scale = Math.random() * 0.6 + 0.7;
     cloud.style.setProperty('--scale', scale);
 
-    const duration = (Math.random() * 10 + 8) / Math.max(speedMultiplier, 0.1);
+    const duration = (Math.random() * 10 + 8) / Math.max(getEffectiveSpeedMultiplier(), 0.1);
     cloud.style.animation = `rise ${duration}s linear forwards`;
 
     cloudContainer.appendChild(cloud);
@@ -388,7 +400,7 @@ function spawnBird() {
             return;
         }
 
-        const step = baseSpeed * speedMultiplier * direction;
+        const step = baseSpeed * getEffectiveSpeedMultiplier() * direction;
         const steps = Math.max(1, Math.ceil(Math.abs(step)));
 
         for (let i = 0; i < steps; i++) {

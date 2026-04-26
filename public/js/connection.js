@@ -20,6 +20,7 @@ let characteristicR = null;
 let characteristicG = null;
 let characteristicB = null;
 let characteristicButton = null;
+let characteristicBoost = null;
 let characteristicBuzzer = null;
 let characteristicLight = null;
 
@@ -43,6 +44,7 @@ const CHARACTERISTIC_G_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_B_UUID = '6e400004-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_BUTTON_UUID = '6e400006-b5a3-f393-e0a9-e50e24dcca9e';
 const CHARACTERISTIC_BUZZER_UUID = '6e400007-b5a3-f393-e0a9-e50e24dcca9e';
+const CHARACTERISTIC_BOOST_UUID = '6e400009-b5a3-f393-e0a9-e50e24dcca9e';
 
 /*==============================
   DOM Elements
@@ -96,6 +98,15 @@ const handleClickConnect = async () => {
         console.log('Getting Button Characteristic...');
         characteristicButton = await service.getCharacteristic(CHARACTERISTIC_BUTTON_UUID);
 
+        console.log('Getting Boost Characteristic...');
+        try {
+            characteristicBoost = await service.getCharacteristic(CHARACTERISTIC_BOOST_UUID);
+            console.log('Boost characteristic found');
+        } catch (error) {
+            characteristicBoost = null;
+            console.warn('Boost characteristic not available on device yet.');
+        }
+
         console.log('Getting Light Characteristic...');
         characteristicLight = await service.getCharacteristic('6e400008-b5a3-f393-e0a9-e50e24dcca9e');
 
@@ -110,6 +121,12 @@ const handleClickConnect = async () => {
         console.log('Starting Notifications...');
         await characteristicButton.startNotifications();
         characteristicButton.addEventListener('characteristicvaluechanged', handleNotificationButton);
+
+        if (characteristicBoost) {
+            await characteristicBoost.startNotifications();
+            characteristicBoost.addEventListener('characteristicvaluechanged', handleNotificationBoost);
+        }
+
         await characteristicLight.startNotifications();
         characteristicLight.addEventListener('characteristicvaluechanged', handleNotificationLight);
 
@@ -147,6 +164,7 @@ const onDisconnected = () => {
     characteristicG = null;
     characteristicB = null;
     characteristicButton = null;
+    characteristicBoost = null;
     characteristicBuzzer = null;
     characteristicLight = null;
     resetBalloonPosition();
@@ -192,6 +210,22 @@ const handleNotificationLight = (event) => {
             isLightOn: lightValue === 1,
         },
     }));
+};
+
+const handleNotificationBoost = (event) => {
+    const characteristic = event.target;
+    const value = characteristic.value;
+
+    if (characteristic.uuid === CHARACTERISTIC_BOOST_UUID) {
+        const boost = value.getUint8(0);
+
+        window.dispatchEvent(new CustomEvent('esp32-boost-change', {
+            detail: {
+                boostValue: boost,
+                isBoostActive: boost === 1,
+            },
+        }));
+    }
 };
 
 /*==============================
