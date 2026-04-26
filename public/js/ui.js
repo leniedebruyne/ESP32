@@ -24,6 +24,7 @@ const BIRD_OFFSCREEN_PADDING = 100;
 
 let speedMultiplier = 1;
 let boostMultiplier = 1;
+let timerMultiplier = 1;
 let birdExists = false;
 let cloudIntervalId = null;
 let birdIntervalId = null;
@@ -32,7 +33,8 @@ let shieldTimeoutId = null;
 let isShieldActive = false;
 
 let lives = MAX_LIVES;
-let gameStartTimestamp = null;
+let elapsedSeconds = 0;
+let lastTimerTickTimestamp = null;
 let timerIntervalId = null;
 let bestTimeSeconds = loadBestTime();
 let isGameOverCountdownActive = false;
@@ -53,8 +55,19 @@ export const setBoostSpeedMultiplier = (value) => {
     }
 };
 
+export const setBoostTimerMultiplier = (value) => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+        timerMultiplier = parsed;
+    }
+};
+
 function getEffectiveSpeedMultiplier() {
     return speedMultiplier * boostMultiplier;
+}
+
+function getEffectiveTimerMultiplier() {
+    return timerMultiplier;
 }
 
 // Overlay Elements
@@ -179,20 +192,22 @@ export function clearShield() {
 }
 
 function getElapsedSeconds() {
-    if (!gameStartTimestamp) {
-        return 0;
-    }
-
-    return (Date.now() - gameStartTimestamp) / 1000;
+    return elapsedSeconds;
 }
 
 function startHudTimer() {
     stopHudTimer();
-    gameStartTimestamp = Date.now();
+    elapsedSeconds = 0;
+    lastTimerTickTimestamp = Date.now();
     updateHudTime(0);
 
     timerIntervalId = setInterval(() => {
-        updateHudTime(getElapsedSeconds());
+        const now = Date.now();
+        const deltaSeconds = (now - lastTimerTickTimestamp) / 1000;
+
+        elapsedSeconds += deltaSeconds * getEffectiveTimerMultiplier();
+        lastTimerTickTimestamp = now;
+        updateHudTime(elapsedSeconds);
     }, 250);
 }
 
@@ -201,6 +216,8 @@ function stopHudTimer() {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
     }
+
+    lastTimerTickTimestamp = null;
 }
 
 function updateBestTimeIfNeeded(finalSeconds) {

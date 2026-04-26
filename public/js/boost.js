@@ -1,13 +1,15 @@
-import { setBoostSpeedMultiplier } from './ui.js';
+import { setBoostSpeedMultiplier, setBoostTimerMultiplier } from './ui.js';
 
 const BOOST_SPEED_MULTIPLIER = 3.5;
 
 export function activateBoost() {
     setBoostSpeedMultiplier(BOOST_SPEED_MULTIPLIER);
+    setBoostTimerMultiplier(BOOST_SPEED_MULTIPLIER);
 }
 
 export function deactivateBoost() {
     setBoostSpeedMultiplier(1);
+    setBoostTimerMultiplier(1);
 }
 
 function syncBoost(event) {
