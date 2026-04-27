@@ -3,19 +3,146 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(400px, 90%);
+    width: min(680px, 92%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
     z-index: 20;
-    padding: 80px 40px;
+    padding: 36px 30px;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.intro-loop {
+    width: 100%;
+    margin-top: 6px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 12px 24px rgba(5, 59, 116, 0.12);
+}
+
+.intro-loop h2 {
+    margin: 0 0 14px;
+    font-size: clamp(20px, 2.1vw, 24px);
+    color: #053b74;
+    text-align: center;
+}
+
+.intro-loop-viewport {
+    position: relative;
+    min-height: 338px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(235, 245, 255, 0.9) 0%, rgba(219, 238, 255, 0.86) 100%);
+    border: 1px solid rgba(10, 79, 149, 0.14);
+    overflow: hidden;
+}
+
+.intro-slide {
+    display: none;
+    align-content: start;
+    justify-items: center;
+    gap: 14px;
+    padding: 18px 16px;
+    animation: introSlideEnter 0.25s ease;
+}
+
+.intro-slide.is-active {
+    display: grid;
+}
+
+.intro-slide p {
+    margin: 0;
+    text-align: center;
+    color: #0a4f95;
+    font-size: clamp(14px, 1.9vw, 18px);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.intro-slide img {
+    width: min(100%, 420px);
+    max-height: 230px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 22px rgba(5, 59, 116, 0.14);
+}
+
+.intro-controls {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.intro-nav {
+    min-width: 112px;
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+.intro-step-indicator {
+    margin: 0;
+    color: #0a4f95;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+}
+
+@keyframes introSlideEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    #not-connected {
+        width: min(94vw, 680px);
+        padding: 24px 14px;
+        gap: 14px;
+    }
+
+    .intro-loop {
+        padding: 12px;
+    }
+
+    .intro-loop-viewport {
+        min-height: 250px;
+    }
+
+    .intro-slide {
+        padding: 14px 10px;
+    }
+
+    .intro-slide img {
+        max-height: 172px;
+    }
+
+    .intro-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .intro-step-indicator {
+        width: 100%;
+        order: 3;
+    }
 }
 
 .connection-overlay {

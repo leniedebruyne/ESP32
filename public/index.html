@@ -18,6 +18,48 @@
             <div id="not-connected">
                 <button id="connectButton">Connect to BLE Device</button>
                 <p class="status disconnected">Not connected</p>
+
+                <section class="intro-loop" aria-label="Game controls introduction">
+                    <h2>How to play</h2>
+                    <div class="intro-loop-viewport">
+                        <article class="intro-slide">
+                            <p>Use the black buttons to move the balloon</p>
+                            <img src="assets/introduction/Move-Balloon.png"
+                                alt="Use the black buttons to move the balloon">
+                        </article>
+                        <article class="intro-slide">
+                            <p>Use the white button to make the balloon bigger or smaller</p>
+                            <img src="assets/introduction/Grow-Shrink-Balloon.png"
+                                alt="Use the white button to make the balloon bigger or smaller">
+                        </article>
+                        <article class="intro-slide">
+                            <p>Use the DIY button to boost the balloon</p>
+                            <img src="assets/introduction/Boost-Balloon.png"
+                                alt="Use the DIY button to boost the balloon">
+                        </article>
+                        <article class="intro-slide">
+                            <p>When you hit a bird, you will hear a beep</p>
+                            <img src="assets/introduction/Sound-Collasion.png"
+                                alt="When you hit a bird, you will hear a beep">
+                        </article>
+                        <article class="intro-slide">
+                            <p>See how many lives you have left on the RGB light: 3 lives = green, 2 lives = orange, 1
+                                life = red</p>
+                            <img src="assets/introduction/How-Many-Lives.png"
+                                alt="RGB life indicator with green, orange, and red states">
+                        </article>
+                        <article class="intro-slide">
+                            <p>Scare the dark away by flashing your phone light on the photoresistor</p>
+                            <img src="assets/introduction/Scare-The-Dark.png"
+                                alt="Use a phone light on the photoresistor to scare the dark away">
+                        </article>
+                    </div>
+                    <div class="intro-controls" aria-label="Introduction step controls">
+                        <button type="button" class="intro-nav intro-prev">Previous</button>
+                        <p class="intro-step-indicator" aria-live="polite">Step 1 of 6</p>
+                        <button type="button" class="intro-nav intro-next">Next</button>
+                    </div>
+                </section>
             </div>
             <div id="connected">
                 <div class="connection-overlay">
@@ -49,6 +91,7 @@
     <script type="module" src="js/boost.js"></script>
     <script type="module" src="js/rgb-control.js"></script>
     <script type="module" src="js/balloon-control.js"></script>
+    <script type="module" src="js/intro-loop.js"></script>
 
     <script type="module" src="js/overlay.js"></script>
 </body>
