@@ -67,7 +67,13 @@ export const setBalloonSize = (sizeState) => {
     if (!$balloonImg) return;
 
     const nextSizeState = Number(sizeState);
-    if (!Number.isInteger(nextSizeState) || !(nextSizeState in BALLOON_SIZE_MAP)) {
+    if (!Number.isInteger(nextSizeState)) {
+        return;
+    }
+
+    const sizeExistsInMap = nextSizeState in BALLOON_SIZE_MAP;
+
+    if (!sizeExistsInMap) {
         return;
     }
 

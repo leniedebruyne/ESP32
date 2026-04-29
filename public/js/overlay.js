@@ -31,7 +31,11 @@ function clearSpawnTimer() {
 }
 
 function scheduleNextOverlaySpawn() {
-    if (!isConnected || isOverlayVisible) {
+    if (!isConnected) {
+        return;
+    }
+
+    if (isOverlayVisible) {
         return;
     }
 
@@ -39,8 +43,12 @@ function scheduleNextOverlaySpawn() {
 
     spawnTimeoutId = setTimeout(() => {
         spawnTimeoutId = null;
+        
+        if (!isConnected) {
+            return;
+        }
 
-        if (!isConnected || isOverlayVisible) {
+        if (isOverlayVisible) {
             return;
         }
 

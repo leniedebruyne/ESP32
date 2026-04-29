@@ -965,8 +965,8 @@ initBalloonSpeedSync();
 ```
 
 
-## Extra hartjes 
-Het volgende dat ik zal doen is het toevoegen van de hartjes op een random tijd. Deze zal je dan kunnen pakken als de ballon klein is.
+## Extra hartjes en schildjes
+Het volgende dat ik zal doen is het toevoegen van de hartjes op een random tijd. Deze zal je dan kunnen pakken als de ballon klein is en de schildjes als de balllon groot is.
 Als eerste heb ik een js file aangemaakt genaamd: attributes.js, deze file gaat op een random tijd een hartje of schildje uit de lucht droppen.
 
 ```javascript
@@ -1096,9 +1096,78 @@ sync();
 Het volgende doel is dat je de hartjes alleen kan pakken als de ballon klein is, en de schildjes alleen kunt pakken als de ballon groot is.
 
 
-## Extra schildjes
+## Balloon groot -> schildjes, ballon klein -> hartjes
+Om deze logica te kunnen invoeren heb ik als eerst de onBalloonSizeChange ingeladen, zo kan ik deze gebruiken in mijn attributes.
+```javascript
+import { onBalloonSizeChange } from './balloon-control.js';
+
+```
+
+
+Dan heb ik een kleine functie gemaakt die vertelt welke size de ballon nodig heeft om de attribute te kunnen pakken.
+``javascript
+const BALLOON_SIZE_FOR_ITEM = {
+    heart: 0,
+    shield: 2,
+};
+
+onBalloonSizeChange((sizeState) => {
+    currentBalloonSizeState = Number(sizeState);
+});
+```
+
+En dan heb ik nog een functie gemaakt die ervoor zorgt dat je de items kan collecten.
+```javascript
+function canCollectItem(itemType) {
+    return currentBalloonSizeState === BALLOON_SIZE_FOR_ITEM[itemType];
+}
+```
+
 
 ## Boost
+Als laatste wou ik graag nog een boost maken voor mijn ballon. Ik heb dit gedaan met een diy knop, ik heb die gemaakt door: 
+- Voor de basis een stuk karton te snijden, de grootte van mijn knop.
+- Daarop legde ik een stuk alluminium folie, deze geleid de electriciteit namelijk.
+- Dan plakte ik 1 draadje vast aan de folie.
+- Dan heb ik een laagje keukenpapier op de folie gelegd, dit zorgde voor de isolatie.
+- Dan heb ik daarover nog een laagje alluminium gelegd.
+- En dan alles vastgehouden met plakband.
+- En dan nog op de juiste plaats het andere draadje zodat ze tegen elkaar kunnen zitten.
+
+Voor mijn code heb ik de boost multiplier al gebruikt en die gewoon wat versnelt.
+
+```javascript
+import { setBoostSpeedMultiplier, setBoostTimerMultiplier } from './ui.js';
+
+const BOOST_SPEED_MULTIPLIER = 3.5;
+
+export function activateBoost() {
+    setBoostSpeedMultiplier(BOOST_SPEED_MULTIPLIER);
+    setBoostTimerMultiplier(BOOST_SPEED_MULTIPLIER);
+}
+
+export function deactivateBoost() {
+    setBoostSpeedMultiplier(1);
+    setBoostTimerMultiplier(1);
+}
+
+function syncBoost(event) {
+    if (event?.detail?.isBoostActive) {
+        activateBoost();
+    } else {
+        deactivateBoost();
+    }
+}
+
+window.addEventListener('esp32-boost-change', syncBoost);
+window.addEventListener('esp32-connection-change', (event) => {
+    if (!event?.detail?.isConnected) {
+        deactivateBoost();
+    }
+});
+
+deactivateBoost();
+```
 
 
 

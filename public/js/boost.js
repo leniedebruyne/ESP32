@@ -20,11 +20,19 @@ function syncBoost(event) {
     }
 }
 
-window.addEventListener('esp32-boost-change', syncBoost);
-window.addEventListener('esp32-connection-change', (event) => {
-    if (!event?.detail?.isConnected) {
+function handleBoostChange(event) {
+    syncBoost(event);
+}
+
+function handleConnectionChange(event) {
+    const isConnected = event?.detail?.isConnected;
+
+    if (!isConnected) {
         deactivateBoost();
     }
-});
+}
+
+window.addEventListener('esp32-boost-change', handleBoostChange);
+window.addEventListener('esp32-connection-change', handleConnectionChange);
 
 deactivateBoost();

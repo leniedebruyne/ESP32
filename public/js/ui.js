@@ -245,7 +245,11 @@ function endRound() {
 }
 
 function loseLife() {
-    if (!isGameplayActive() || isShieldActive) {
+    if (!isGameplayActive()) {
+        return;
+    }
+
+    if (isShieldActive) {
         return;
     }
 
@@ -261,7 +265,11 @@ function loseLife() {
 }
 
 export function gainLife() {
-    if (!isGameplayActive() || lives >= MAX_LIVES) {
+    if (!isGameplayActive()) {
+        return false;
+    }
+
+    if (lives >= MAX_LIVES) {
         return false;
     }
 
@@ -378,7 +386,15 @@ function spawnCloud() {
 }
 
 function spawnBird() {
-    if (!isGameplayActive() || birdExists || !gameArea) {
+    if (!isGameplayActive()) {
+        return;
+    }
+
+    if (birdExists) {
+        return;
+    }
+
+    if (!gameArea) {
         return;
     }
 
