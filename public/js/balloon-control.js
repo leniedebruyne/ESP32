@@ -67,23 +67,21 @@ export const setBalloonSize = (sizeState) => {
     if (!$balloonImg) return;
 
     const nextSizeState = Number(sizeState);
-    if (Number.isInteger(nextSizeState) === false) {
-        return;
-    }
 
-    const sizeExistsInMap = nextSizeState in BALLOON_SIZE_MAP;
-
-    if (sizeExistsInMap === false) {
-        return;
-    }
+    if (!Number.isInteger(nextSizeState)) return;
+    if (!(nextSizeState in BALLOON_SIZE_MAP)) return;
 
     balloonSizeState = nextSizeState;
 
-    Object.values(BALLOON_SIZE_MAP).forEach((className) => {
+    const classNames = Object.values(BALLOON_SIZE_MAP);
+
+    classNames.forEach((className) => {
         $balloonImg.classList.remove(className);
     });
 
-    $balloonImg.classList.add(BALLOON_SIZE_MAP[balloonSizeState]);
+    const newClass = BALLOON_SIZE_MAP[balloonSizeState];
+    $balloonImg.classList.add(newClass);
+
     updateBalloonPosition();
     notifyBalloonSizeChange();
 };
@@ -94,8 +92,11 @@ export const onBalloonSizeChange = (listener) => {
     }
 
     balloonSizeListeners.add(listener);
+
+    // meteen initial value pushen
     listener(balloonSizeState);
 
+    // unsubscribe function
     return () => {
         balloonSizeListeners.delete(listener);
     };

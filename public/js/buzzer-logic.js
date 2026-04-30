@@ -13,14 +13,10 @@ let writeQueue = Promise.resolve();
 
 // Helper function to queue writes to the buzzer characteristic
 const queueWrite = (characteristic, value) => {
-    writeQueue = writeQueue.then(() => {
+    writeQueue = writeQueue.then(async () => {
         const data = new Uint8Array([value]);
 
-        const writePromise = characteristic.writeValueWithoutResponse(data);
-
-        return writePromise.catch((error) => {
-            console.error('Buzzer write failed:', error);
-        });
+        return characteristic.writeValueWithoutResponse(data);
     });
 };
 

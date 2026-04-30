@@ -13,8 +13,8 @@ function getSpeedMultiplierForSize(sizeState) {
     const numericSizeState = Number(sizeState);
 
     const isValidInteger = Number.isInteger(numericSizeState);
-    const sizeExistsInMap = numericSizeState in SPEED_BY_SIZE_STATE;
-
+    const sizeExistsInMap = Object.hasOwn(SPEED_BY_SIZE_STATE, numericSizeState);
+    
     if (isValidInteger && sizeExistsInMap) {
         return SPEED_BY_SIZE_STATE[numericSizeState];
     }

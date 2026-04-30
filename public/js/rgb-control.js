@@ -17,14 +17,10 @@ const setCurrentRgb = (r, g, b) => {
 
 // Queues BLE writes so RGB updates are sent in order.
 const queueWrite = (characteristic, value) => {
-    writeQueue = writeQueue.then(() => {
+    writeQueue = writeQueue.then(async () => {
         const data = new Uint8Array([value]);
 
-        const writePromise = characteristic.writeValueWithoutResponse(data);
-
-        return writePromise.catch((error) => {
-            console.error('Write failed:', error);
-        });
+        return characteristic.writeValueWithoutResponse(data);
     });
 };
 
@@ -75,29 +71,23 @@ export const blinkRgb = (r, g, b, flashes = 2) => {
 
     const restoreRgb = getCurrentRgb();
 
-    writeQueue = writeQueue.then(() => {
-        return (async () => {
-            try {
-                for (let i = 0; i < flashes; i += 1) {
-                    await writeRgbChannels(r, g, b);
-                    await wait(140);
+    writeQueue = writeQueue.then(async () => {
+        for (let i = 0; i < flashes; i += 1) {
+            await writeRgbChannels(r, g, b);
+            await wait(140);
 
-                    await writeRgbChannels(0, 0, 0);
+            await writeRgbChannels(0, 0, 0);
 
-                    if (i < flashes - 1) {
-                        await wait(120);
-                    }
-                }
-
-                await writeRgbChannels(
-                    restoreRgb.r,
-                    restoreRgb.g,
-                    restoreRgb.b
-                );
-            } catch (error) {
-                console.error('Blink failed:', error);
+            if (i < flashes - 1) {
+                await wait(120);
             }
-        })();
+        }
+
+        await writeRgbChannels(
+            restoreRgb.r,
+            restoreRgb.g,
+            restoreRgb.b
+        );
     });
 };
 

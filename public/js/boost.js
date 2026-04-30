@@ -32,8 +32,14 @@ function handleConnectionChange(event) {
     const hasEvent = event !== undefined && event !== null;
     const hasDetail = hasEvent && event.detail !== undefined && event.detail !== null;
 
-    const isConnected = hasDetail ? event.detail.isConnected : undefined;
-    
+    let isConnected;
+
+    if (hasDetail) {
+        isConnected = event.detail.isConnected;
+    } else {
+        isConnected = undefined;
+    }
+        
     if (!isConnected) {
         deactivateBoost();
     }

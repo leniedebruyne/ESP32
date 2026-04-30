@@ -142,10 +142,12 @@ function shieldLoop() {
 
     const delay = getRandom(SHIELD_DELAY_MIN, SHIELD_DELAY_MAX);
 
-    shieldTimeoutId = setTimeout(() => {
+    const scheduleNext = () => {
         spawnShield();
         shieldLoop();
-    }, delay);
+    };
+
+    shieldTimeoutId = setTimeout(scheduleNext, delay);
 }
 
 function heartLoop() {
@@ -153,10 +155,12 @@ function heartLoop() {
 
     const delay = getRandom(HEART_DELAY_MIN, HEART_DELAY_MAX);
 
-    heartTimeoutId = setTimeout(() => {
+    const scheduleNext = () => {
         spawnHeart();
         heartLoop();
-    }, delay);
+    };
+
+    heartTimeoutId = setTimeout(scheduleNext, delay);
 }
 
 // ===== START / STOP =====
