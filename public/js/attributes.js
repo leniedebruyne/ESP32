@@ -25,11 +25,13 @@ let isShieldActive = false;
 let isHeartActive = false;
 let currentBalloonSizeState = 1;
 
+// ===== mapping object for item size =====
 const BALLOON_SIZE_FOR_ITEM = {
     heart: 0,
     shield: 2,
 };
 
+// ===== if the ballon size changes, update variable =====
 onBalloonSizeChange((sizeState) => {
     currentBalloonSizeState = Number(sizeState);
 });
@@ -56,7 +58,7 @@ function canCollectItem(itemType) {
 
 function trackCollectible(el, itemType) {
     const animate = () => {
-        if (!el.isConnected) {
+        if (el.isConnected === false) {
             return;
         }
 
@@ -102,7 +104,12 @@ function spawnShield() {
     document.body.appendChild(el);
     trackCollectible(el, 'shield');
 
-    el.addEventListener('animationend', () => el.remove(), { once: true });
+    const handleAnimationEnd = () => {
+        el.removeEventListener('animationend', handleAnimationEnd);
+        el.remove();
+    };
+
+    el.addEventListener('animationend', handleAnimationEnd);
 }
 
 // ===== SPAWN HEART =====
@@ -121,7 +128,12 @@ function spawnHeart() {
     document.body.appendChild(el);
     trackCollectible(el, 'heart');
 
-    el.addEventListener('animationend', () => el.remove(), { once: true });
+    const handleAnimationEnd = () => {
+        el.removeEventListener('animationend', handleAnimationEnd);
+        el.remove();
+    };
+
+    el.addEventListener('animationend', handleAnimationEnd);
 }
 
 // ===== LOOPS =====
@@ -183,5 +195,7 @@ function sync() {
     }
 }
 
+
+// anders spawnen de elementen niet
 window.addEventListener('esp32-connection-change', sync);
-sync(); 
+sync();  

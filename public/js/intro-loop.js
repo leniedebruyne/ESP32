@@ -29,13 +29,17 @@ if (introRoot) {
         updateStep();
     };
 
-    prevButton?.addEventListener('click', () => {
-        goToStep(currentStep - 1);
-    });
+    if (prevButton !== null) {
+        prevButton.addEventListener('click', () => {
+            goToStep(currentStep - 1);
+        });
+    }
 
-    nextButton?.addEventListener('click', () => {
-        goToStep(currentStep + 1);
-    });
+    if (nextButton !== null) {
+        nextButton.addEventListener('click', () => {
+            goToStep(currentStep + 1);
+        });
+    }
 
     introRoot.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') {

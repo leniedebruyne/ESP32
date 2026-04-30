@@ -67,13 +67,13 @@ export const setBalloonSize = (sizeState) => {
     if (!$balloonImg) return;
 
     const nextSizeState = Number(sizeState);
-    if (!Number.isInteger(nextSizeState)) {
+    if (Number.isInteger(nextSizeState) === false) {
         return;
     }
 
     const sizeExistsInMap = nextSizeState in BALLOON_SIZE_MAP;
 
-    if (!sizeExistsInMap) {
+    if (sizeExistsInMap === false) {
         return;
     }
 
@@ -133,11 +133,7 @@ const updateBalloonPosition = () => {
 
 const notifyBalloonSizeChange = () => {
     balloonSizeListeners.forEach((listener) => {
-        try {
-            listener(balloonSizeState);
-        } catch (error) {
-            console.error('Balloon size listener failed:', error);
-        }
+        listener(balloonSizeState);
     });
 };
 

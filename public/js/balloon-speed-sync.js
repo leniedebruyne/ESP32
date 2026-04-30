@@ -12,7 +12,10 @@ const DEFAULT_SPEED_MULTIPLIER = 1.0;
 function getSpeedMultiplierForSize(sizeState) {
     const numericSizeState = Number(sizeState);
 
-    if (Number.isInteger(numericSizeState) && numericSizeState in SPEED_BY_SIZE_STATE) {
+    const isValidInteger = Number.isInteger(numericSizeState);
+    const sizeExistsInMap = numericSizeState in SPEED_BY_SIZE_STATE;
+
+    if (isValidInteger && sizeExistsInMap) {
         return SPEED_BY_SIZE_STATE[numericSizeState];
     }
 

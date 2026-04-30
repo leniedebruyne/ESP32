@@ -17,13 +17,15 @@ const setCurrentRgb = (r, g, b) => {
 
 // Queues BLE writes so RGB updates are sent in order.
 const queueWrite = (characteristic, value) => {
-    writeQueue = writeQueue.then(() =>
-        characteristic
-            .writeValueWithoutResponse(new Uint8Array([value]))
-            .catch(error => {
-                console.error('Write failed:', error);
-            })
-    );
+    writeQueue = writeQueue.then(() => {
+        const data = new Uint8Array([value]);
+
+        const writePromise = characteristic.writeValueWithoutResponse(data);
+
+        return writePromise.catch((error) => {
+            console.error('Write failed:', error);
+        });
+    });
 };
 
 const writeRgbChannels = async (r, g, b) => {
@@ -73,28 +75,41 @@ export const blinkRgb = (r, g, b, flashes = 2) => {
 
     const restoreRgb = getCurrentRgb();
 
-    writeQueue = writeQueue.then(async () => {
-        try {
-            for (let index = 0; index < flashes; index += 1) {
-                await writeRgbChannels(r, g, b);
-                await wait(140);
-                await writeRgbChannels(0, 0, 0);
-                if (index < flashes - 1) {
-                    await wait(120);
-                }
-            }
+    writeQueue = writeQueue.then(() => {
+        return (async () => {
+            try {
+                for (let i = 0; i < flashes; i += 1) {
+                    await writeRgbChannels(r, g, b);
+                    await wait(140);
 
-            await writeRgbChannels(restoreRgb.r, restoreRgb.g, restoreRgb.b);
-        } catch (error) {
-            console.error('Blink failed:', error);
-        }
+                    await writeRgbChannels(0, 0, 0);
+
+                    if (i < flashes - 1) {
+                        await wait(120);
+                    }
+                }
+
+                await writeRgbChannels(
+                    restoreRgb.r,
+                    restoreRgb.g,
+                    restoreRgb.b
+                );
+            } catch (error) {
+                console.error('Blink failed:', error);
+            }
+        })();
     });
 };
 
 // Initializes RGB control listeners and connection sync behavior.
 const initRgbControl = () => {
     window.addEventListener('esp32-connection-change', (event) => {
-        if (event?.detail?.isConnected) {
+        const hasEvent = event !== null && event !== undefined;
+        const hasDetail = hasEvent && event.detail !== null && event.detail !== undefined;
+
+        const isConnected = hasDetail && event.detail.isConnected === true;
+
+        if (isConnected === true) {
             sendRgbIfConnected(255, 0, 0);
         }
     });

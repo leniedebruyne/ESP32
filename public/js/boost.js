@@ -13,7 +13,11 @@ export function deactivateBoost() {
 }
 
 function syncBoost(event) {
-    if (event?.detail?.isBoostActive) {
+    const hasEvent = event !== undefined && event !== null;
+    const hasDetail = hasEvent && event.detail !== undefined && event.detail !== null;
+    const isBoostActive = hasDetail && event.detail.isBoostActive === true;
+
+    if (isBoostActive) {
         activateBoost();
     } else {
         deactivateBoost();
@@ -25,8 +29,11 @@ function handleBoostChange(event) {
 }
 
 function handleConnectionChange(event) {
-    const isConnected = event?.detail?.isConnected;
+    const hasEvent = event !== undefined && event !== null;
+    const hasDetail = hasEvent && event.detail !== undefined && event.detail !== null;
 
+    const isConnected = hasDetail ? event.detail.isConnected : undefined;
+    
     if (!isConnected) {
         deactivateBoost();
     }
