@@ -4,7 +4,7 @@
 
 import { isEsp32Connected } from './connection.js';
 import { sendRgbIfConnected } from './rgb-control.js';
-import { triggerCollisionBuzzer } from './buzzer-logic.js';
+import { triggerCollisionBuzzer, triggerGameOverMelody } from './buzzer-logic.js';
 
 // DOM Elements
 const cloudContainer = ensureCloudContainer();
@@ -283,13 +283,13 @@ function updateLedByLives() {
     if (!isEsp32ConnectionActive()) return;
 
     if (lives === 3) {
-        sendRgbIfConnected(0, 40, 0); // groen
+        sendRgbIfConnected(0, 255, 0); // groen
     }
     else if (lives === 2) {
-        sendRgbIfConnected(60, 20, 0); // oranje
+        sendRgbIfConnected(255, 60, 0); // oranje
     }
     else if (lives === 1) {
-        sendRgbIfConnected(80, 0, 0); // rood
+        sendRgbIfConnected(255, 0, 0); // rood
     }
     else if (lives === 0) {
         sendRgbIfConnected(0, 0, 0); // uit
@@ -328,6 +328,7 @@ function clearRoundRestartTimers() {
 function startGameOverCountdown() {
     clearRoundRestartTimers();
     isGameOverCountdownActive = true;
+    triggerGameOverMelody();
 
     let remainingSeconds = GAME_OVER_COUNTDOWN_SECONDS;
     updateGameOverCountdown(remainingSeconds);

@@ -60,7 +60,7 @@ button:disabled {
 }
 
 .status.connected {
-    background-color: rgba(212, 237, 218, 0.9);
+    background-color: rgba(165, 208, 175, 0.9);
     color: #155724;
 }
 

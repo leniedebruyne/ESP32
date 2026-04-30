@@ -42,3 +42,29 @@ export const triggerCollisionBuzzer = () => {
     lastCollisionBuzzAt = now;
     queueWrite(characteristicBuzzer, COLLISION_BUZZER_VALUE);
 };
+
+// Function to trigger a game over melody
+export const triggerGameOverMelody = async () => {
+    if (!isEsp32Connected()) return;
+
+    const characteristicBuzzer = getBuzzerCharacteristic();
+    if (!characteristicBuzzer) return;
+
+    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+    const beeps = [
+        { value: 2, duration: 150, pause: 250 },
+        { value: 1, duration: 250, pause: 350 },
+        { value: 1, duration: 400, pause: 500 },
+        { value: 1, duration: 800, pause: 1200 } 
+    ];
+
+    for (const beep of beeps) {
+        queueWrite(characteristicBuzzer, beep.value);
+        await sleep(beep.duration);
+
+        queueWrite(characteristicBuzzer, 0);
+        await sleep(beep.pause);
+    }
+};
+

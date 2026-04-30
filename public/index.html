@@ -62,11 +62,6 @@
                 </section>
             </div>
             <div id="connected">
-                <div class="connection-overlay">
-                    <button id="disconnectButton">Disconnect</button>
-                    <p class="status connected">✓ Connected to <span id="deviceName"></span></p>
-                </div>
-
                 <div id="notifications" class="hidden-logic" aria-hidden="true">
                     <p><em>Waiting for notifications...</em></p>
                 </div>
@@ -76,9 +71,16 @@
                 </div>
 
                 <div class="hud" aria-live="polite">
-                    <span class="time">Time: 00:00</span>
-                    <span class="best">Best time: 00:00</span>
-                    <div class="lives">❤️ ❤️ ❤️</div>
+                    <div class="game-status">
+                        <button id="disconnectButton">Disconnect</button>
+                        <p class="status connected">✓ Connected to <span id="deviceName"></span></p>
+                    </div>
+                    <div class="game-elements">
+                        <span class="time">Time: 00:00</span>
+                        <span class="best">Best time: 00:00</span>
+                        <div class="lives">❤️ ❤️ ❤️</div>
+                    </div>
+
                 </div>
             </div>
         </div>

@@ -3,6 +3,10 @@ import { onBalloonSizeChange } from './balloon-control.js';
 import { blinkRgb } from './rgb-control.js';
 import { activateShield, gainLife } from './ui.js';
 
+const PICKUP_BLINKS = 5;
+const HEART_FLASH_RGB = [255, 45, 160];
+const SHIELD_FLASH_RGB = [0, 180, 255];
+
 // ==== SHIELD SETTINGS =====
 const SHIELD_DELAY_MIN = 8000;
 const SHIELD_DELAY_MAX = 10000;
@@ -65,10 +69,10 @@ function trackCollectible(el, itemType) {
             if (isRectOverlapping(itemRect, balloonRect) && canCollectItem(itemType)) {
                 if (itemType === 'heart') {
                     gainLife();
-                    blinkRgb(255, 105, 180, 2);
+                    blinkRgb(...HEART_FLASH_RGB, PICKUP_BLINKS);
                 } else if (itemType === 'shield') {
                     activateShield();
-                    blinkRgb(0, 120, 255, 2);
+                    blinkRgb(...SHIELD_FLASH_RGB, PICKUP_BLINKS);
                 }
 
                 el.remove();
