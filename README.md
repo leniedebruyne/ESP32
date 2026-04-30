@@ -1169,9 +1169,283 @@ window.addEventListener('esp32-connection-change', (event) => {
 deactivateBoost();
 ```
 
-
+## huidige Arduino code
 
 
 ```javascript
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
+#define DEVICE_NAME "Lenie_Debruyne"
+
+// UUIDs
+#define SERVICE_UUID                "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_UUID_R       "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_UUID_G       "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_UUID_B       "6e400004-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_BUTTON_UUID  "6e400006-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_BUZZER_UUID  "6e400007-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_LIGHT_UUID   "6e400008-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHARACTERISTIC_BOOST_UUID "6e400009-b5a3-f393-e0a9-e50e24dcca9e"
+
+
+// Pins
+const int leftButtonPin = 21;
+const int rightButtonPin = 18;
+const int upButtonPin = 13;
+const int downButtonPin = 12;
+const int sizeButtonPin = 17;
+
+const int diyButtonPin = 16;
+
+
+const int redPin = 4;
+const int greenPin = 5;
+const int bluePin = 6;
+const int buzzerPin = 19;
+
+// photoresistor
+int sensorPin = 8;
+int lightInit = 0;
+
+BLEServer *pServer = nullptr;
+BLECharacteristic *pCharacteristicButton = nullptr;
+BLECharacteristic *pCharacteristicLight = nullptr;
+BLECharacteristic *pCharacteristicBoost = nullptr;
+
+
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+
+// timing
+unsigned long previousMillis = 0;
+const unsigned long interval = 50;
+
+// size system
+int sizeState = 0;
+bool lastSizeButtonState = HIGH;
+
+/*==============================
+  BLE Callbacks
+==============================*/
+
+class MyServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer *pServer) {
+    deviceConnected = true;
+  }
+  void onDisconnect(BLEServer *pServer) {
+    deviceConnected = false;
+  }
+};
+
+/*==============================
+  RGB Callbacks
+==============================*/
+
+class RedCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String rxValue = pCharacteristic->getValue();
+    if (rxValue.length() > 0) analogWrite(redPin, (uint8_t)rxValue[0]);
+  }
+};
+
+class GreenCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String rxValue = pCharacteristic->getValue();
+    if (rxValue.length() > 0) analogWrite(greenPin, (uint8_t)rxValue[0]);
+  }
+};
+
+class BlueCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String rxValue = pCharacteristic->getValue();
+    if (rxValue.length() > 0) analogWrite(bluePin, (uint8_t)rxValue[0]);
+  }
+};
+
+/*==============================
+  Buzzer Callback
+==============================*/
+
+class BuzzerCallback : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String value = pCharacteristic->getValue();
+    if (value.length() > 0 && value[0] == 1) {
+      tone(buzzerPin, 2500);
+      delay(150);
+      noTone(buzzerPin);
+    }
+  }
+};
+
+/*==============================
+  Setup
+==============================*/
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(leftButtonPin, INPUT_PULLUP);
+  pinMode(rightButtonPin, INPUT_PULLUP);
+  pinMode(upButtonPin, INPUT_PULLUP);
+  pinMode(downButtonPin, INPUT_PULLUP);
+  pinMode(sizeButtonPin, INPUT_PULLUP);
+
+  pinMode(diyButtonPin, INPUT_PULLUP);
+
+
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  // photo resistor baseline
+  delay(1000);
+  lightInit = analogRead(sensorPin);
+
+  BLEDevice::init(DEVICE_NAME);
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // RGB
+  BLECharacteristic *pRCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID_R,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  pRCharacteristic->setCallbacks(new RedCallback());
+
+  BLECharacteristic *pGCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID_G,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  pGCharacteristic->setCallbacks(new GreenCallback());
+
+  BLECharacteristic *pBCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID_B,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  pBCharacteristic->setCallbacks(new BlueCallback());
+
+  // Buttons
+  pCharacteristicButton = pService->createCharacteristic(
+    CHARACTERISTIC_BUTTON_UUID,
+    BLECharacteristic::PROPERTY_NOTIFY);
+
+  // Buzzer
+  BLECharacteristic *pBuzzerCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_BUZZER_UUID,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  pBuzzerCharacteristic->setCallbacks(new BuzzerCallback());
+
+  // Light sensor
+  pCharacteristicLight = pService->createCharacteristic(
+    CHARACTERISTIC_LIGHT_UUID,
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  pCharacteristicLight->addDescriptor(new BLE2902());
+
+  // diy button
+  pCharacteristicBoost = pService->createCharacteristic(
+    CHARACTERISTIC_BOOST_UUID,
+    BLECharacteristic::PROPERTY_NOTIFY
+);
+pCharacteristicBoost->addDescriptor(new BLE2902());
+
+
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  BLEDevice::startAdvertising();
+}
+
+/*==============================
+  Loop
+==============================*/
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  // NON-BLOCKING lichtsensor 
+  static unsigned long lastLightSend = 0;
+  if (currentMillis - lastLightSend >= 200) {
+      lastLightSend = currentMillis;
+
+int lightVal = analogRead(sensorPin);
+Serial.print("Light raw: ");
+Serial.println(lightVal);
+
+int isFlash = (lightVal > 2000) ? 1 : 0;
+
+      uint8_t dataLight = isFlash;
+      pCharacteristicLight->setValue(&dataLight, 1);
+      pCharacteristicLight->notify();
+  }
+
+  // BUTTON SYSTEM (stuurt elke 50 ms)
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    int leftState = digitalRead(leftButtonPin);
+    int rightState = digitalRead(rightButtonPin);
+    int upState = digitalRead(upButtonPin);
+    int downState = digitalRead(downButtonPin);
+    int sizeButtonState = digitalRead(sizeButtonPin);
+
+    // size toggle (edge detectie)
+    if (lastSizeButtonState == HIGH && sizeButtonState == LOW) {
+      sizeState = (sizeState + 1) % 3;
+      delay(50); // simpele debounce
+    }
+    lastSizeButtonState = sizeButtonState;
+
+    if (deviceConnected) {
+      uint8_t data[2];
+
+      data[0] = 2; // idle
+
+      if (leftState == LOW) data[0] = 0;
+      else if (rightState == LOW) data[0] = 1;
+      else if (upState == LOW) data[0] = 3;
+      else if (downState == LOW) data[0] = 4;
+
+      data[1] = sizeState;
+
+      pCharacteristicButton->setValue(data, 2);
+      pCharacteristicButton->notify();
+    }
+
+    // diy button
+
+int diyState = digitalRead(diyButtonPin);
+
+// 1 = pressed, 0 = released
+uint8_t boostVal = (diyState == LOW) ? 1 : 0;
+
+// Debug in Serial Monitor
+if (boostVal == 1) Serial.println("BOOST PRESSED");
+else Serial.println("BOOST RELEASED");
+
+// Via BLE uitsturen
+if (deviceConnected) {
+    pCharacteristicBoost->setValue(&boostVal, 1);
+    pCharacteristicBoost->notify();
+}
+
+}
+
+  
+
+  // reconnect handling
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(500);
+    BLEDevice::startAdvertising();
+    oldDeviceConnected = false;
+  }
+
+  if (deviceConnected && !oldDeviceConnected) {
+    oldDeviceConnected = true;
+  }
+}
 ```
