@@ -92,5 +92,10 @@ function handleConnectionChange(event) {
     scheduleNextOverlaySpawn();
 }
 
-window.addEventListener('esp32-light-change', handleLightChange);
-window.addEventListener('esp32-connection-change', handleConnectionChange);
+function initOverlay() {
+    window.addEventListener('esp32-light-change', handleLightChange);
+    window.addEventListener('esp32-connection-change', handleConnectionChange);
+}
+
+initOverlay();
+

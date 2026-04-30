@@ -39,7 +39,11 @@ function handleConnectionChange(event) {
     }
 }
 
-window.addEventListener('esp32-boost-change', handleBoostChange);
-window.addEventListener('esp32-connection-change', handleConnectionChange);
+function initBoost() {
+    window.addEventListener('esp32-boost-change', handleBoostChange);
+    window.addEventListener('esp32-connection-change', handleConnectionChange);
 
-deactivateBoost();
+    deactivateBoost();
+}
+
+initBoost();

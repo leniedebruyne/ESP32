@@ -195,7 +195,12 @@ function sync() {
     }
 }
 
+function initAttributes() {
+    // anders spawnen de elementen niet
+    window.addEventListener('esp32-connection-change', sync);
+    sync();
+}
 
-// anders spawnen de elementen niet
-window.addEventListener('esp32-connection-change', sync);
-sync();  
+initAttributes();
+
+
